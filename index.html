@@ -36,6 +36,7 @@
       <label><span>Herramienta</span><select id="toolSelect"><option value="">Cargando herramientas...</option></select></label>
       <label><span>Material</span><select id="materialSelect"><option value="">Cargando materiales...</option></select></label>
       <label><span>Máquina</span><select id="machineSelect"><option value="">Cargando máquinas...</option></select></label>
+      <label><span>Estrategia de recorrido</span><select id="toolpathStrategySelect"><option value="zigzag">ZigZag</option></select></label>
     </div>
     <div id="libraryStatus" class="status"></div>
     <div id="recommendationsOutput" class="recommendations"></div>
@@ -74,6 +75,72 @@ function updateSuggestion() {
   el.innerHTML = "Sugerencia: " + clean(low) + " a " + clean(high) + " mm. Conservador: " + clean(mid) + " mm.";
 }
 
+function renderToolpathEvent(event) {
+  if (event.type === "blank") return "";
+  if (event.type === "comment") return "( " + event.text + " )";
+  if (event.type === "absoluteMode") return "G90";
+  if (event.type === "relativeMode") return "G91";
+  if (event.type === "feedRate") return "F" + clean(event.value);
+
+  if (event.type === "rapid" || event.type === "linear") {
+    const parts = [event.type === "rapid" ? "G0" : "G1"];
+    if (event.x !== undefined) parts.push("X" + clean(event.x));
+    if (event.y !== undefined) parts.push("Y" + clean(event.y));
+    if (event.z !== undefined) parts.push("Z" + clean(event.z));
+    if (event.feed !== undefined) parts.push("F" + clean(event.feed));
+    return parts.join(" ");
+  }
+
+  return "( ADVERTENCIA: evento Toolpath no soportado: " + event.type + " )";
+}
+
+function renderToolpathLines(toolpath) {
+  return toolpath.events.map(renderToolpathEvent);
+}
+
+function generateLegacyZigZagToolpathLines(parameters) {
+  const zIncrement = parameters.totalZ / parameters.zPasses;
+  let lines = [];
+
+  for (let zp = 1; zp <= parameters.zPasses; zp++) {
+    const depth = zIncrement * zp;
+
+    lines.push("( ============================== )");
+    lines.push("( PASADA Z " + zp + " DE " + parameters.zPasses + " - Z-" + clean(depth) + " )");
+    lines.push("( ============================== )");
+    lines.push("G90");
+    lines.push("G0 X0 Y0");
+    lines.push("G1 Z-" + clean(depth) + " F" + clean(parameters.plungeRate));
+    lines.push("G91");
+    lines.push("F" + clean(parameters.feedRate));
+    lines.push("");
+
+    let coveredX = 0;
+    let pass = 1;
+    let dirY = parameters.startDirection === "positive" ? parameters.distY : -parameters.distY;
+
+    while (coveredX < parameters.distX) {
+      const remainingX = parameters.distX - coveredX;
+      const moveX = Math.min(parameters.stepX, remainingX);
+
+      lines.push("( Z" + zp + " / PASADA XY " + pass + " )");
+      lines.push("G1 Y" + clean(dirY));
+      if (moveX > 0) lines.push("G1 X" + clean(moveX));
+      lines.push("");
+
+      coveredX += moveX;
+      dirY = -dirY;
+      pass++;
+    }
+
+    lines.push("G90");
+    lines.push("G0 Z" + clean(parameters.safeZ));
+    lines.push("");
+  }
+
+  return lines;
+}
+
 function generateGcode() {
   const distX = num("distX");
   const distY = num("distY");
@@ -99,7 +166,23 @@ function generateGcode() {
     return;
   }
 
-  const zIncrement = totalZ / zPasses;
+  const toolpathParameters = {
+    distX,
+    distY,
+    zPasses,
+    totalZ,
+    feedRate,
+    plungeRate,
+    stepX,
+    toolDia,
+    spindle,
+    safeZ,
+    startDirection,
+    clean,
+  };
+  const selectedStrategyId = document.getElementById("toolpathStrategySelect")
+    ? document.getElementById("toolpathStrategySelect").value
+    : "zigzag";
   let lines = [];
 
   lines.push("%");
@@ -123,41 +206,13 @@ function generateGcode() {
   lines.push("G0 X0 Y0");
   lines.push("");
 
-  for (let zp = 1; zp <= zPasses; zp++) {
-    const depth = zIncrement * zp;
-
-    lines.push("( ============================== )");
-    lines.push("( PASADA Z " + zp + " DE " + zPasses + " - Z-" + clean(depth) + " )");
-    lines.push("( ============================== )");
-    lines.push("G90");
-    lines.push("G0 X0 Y0");
-    lines.push("G1 Z-" + clean(depth) + " F" + clean(plungeRate));
-    lines.push("G91");
-    lines.push("F" + clean(feedRate));
-    lines.push("");
-
-    let coveredX = 0;
-    let pass = 1;
-    let dirY = startDirection === "positive" ? distY : -distY;
-
-    while (coveredX < distX) {
-      const remainingX = distX - coveredX;
-      const moveX = Math.min(stepX, remainingX);
-
-      lines.push("( Z" + zp + " / PASADA XY " + pass + " )");
-      lines.push("G1 Y" + clean(dirY));
-      if (moveX > 0) lines.push("G1 X" + clean(moveX));
-      lines.push("");
-
-      coveredX += moveX;
-      dirY = -dirY;
-      pass++;
-    }
-
-    lines.push("G90");
-    lines.push("G0 Z" + clean(safeZ));
-    lines.push("");
-  }
+  const toolpath = window.bujiaToolpaths && window.bujiaToolpaths.generateToolpath
+    ? window.bujiaToolpaths.generateToolpath(selectedStrategyId, toolpathParameters)
+    : null;
+  const toolpathLines = toolpath
+    ? renderToolpathLines(toolpath)
+    : generateLegacyZigZagToolpathLines(toolpathParameters);
+  toolpathLines.forEach(line => lines.push(line));
 
   lines.push("G90");
   lines.push("G0 Z" + clean(safeZ));
@@ -286,7 +341,18 @@ generateGcode();
   Promise.all([
     import("./core/library/library.js"),
     import("./core/recommendations/recommendations.js"),
-  ]).then(([libraryModule, recommendationsModule]) => {
+    import("./toolpaths/index.js"),
+  ]).then(([libraryModule, recommendationsModule, toolpathModule]) => {
+    window.bujiaToolpaths = toolpathModule;
+    const strategySelect = document.getElementById("toolpathStrategySelect");
+    strategySelect.innerHTML = "";
+    toolpathModule.getStrategies().forEach((strategy) => {
+      const option = document.createElement("option");
+      option.value = strategy.id;
+      option.textContent = strategy.name;
+      strategySelect.appendChild(option);
+    });
+    strategySelect.value = toolpathModule.DEFAULT_STRATEGY_ID;
     let currentLibrary;
 
     function updateRecommendation() {
@@ -324,6 +390,7 @@ generateGcode();
       toolSelect.addEventListener("change", updateRecommendation);
       materialSelect.addEventListener("change", updateRecommendation);
       machineSelect.addEventListener("change", updateRecommendation);
+      document.getElementById("toolpathStrategySelect").addEventListener("change", updateRecommendation);
       ["distX", "distY", "zPasses", "totalZ", "feedRate", "plungeRate", "stepX", "spindle", "safeZ"].forEach((id) => {
         document.getElementById(id).addEventListener("input", updateRecommendation);
       });
