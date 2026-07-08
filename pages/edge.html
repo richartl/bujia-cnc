@@ -12,25 +12,100 @@
     <p><a href="../index.html">← Volver al inicio</a></p>
     <section class="card">
       <h1>Cantos</h1>
-      <p class="muted">Formulario futuro para mecanizado de cantos.</p>
+      <p class="muted">Genera G-code simple para mecanizar cantos con pasadas de profundidad y retorno rápido al inicio.</p>
+
       <form class="tool-form" aria-label="Formulario Cantos">
         <div class="form-field">
-          <label for="length">Largo del canto (mm)</label>
-          <input id="length" name="length" type="number" placeholder="Pendiente de implementación">
+          <label for="length">Longitud (mm)</label>
+          <input id="length" name="length" type="number" value="300" step="0.1">
         </div>
+
         <div class="form-field">
-          <label for="depth">Profundidad (mm)</label>
-          <input id="depth" name="depth" type="number" placeholder="Pendiente de implementación">
+          <label for="finalDepth">Profundidad final (mm)</label>
+          <input id="finalDepth" name="finalDepth" type="number" value="3" min="0" step="0.1">
         </div>
+
         <div class="form-field">
-          <label for="passes">Número de pasadas</label>
-          <input id="passes" name="passes" type="number" placeholder="Pendiente de implementación">
+          <label for="depthPerPass">Profundidad por pasada (mm)</label>
+          <input id="depthPerPass" name="depthPerPass" type="number" value="1" min="0" step="0.1">
         </div>
+
+        <div class="form-field">
+          <label for="feed">Feed (mm/min)</label>
+          <input id="feed" name="feed" type="number" value="600" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="plunge">Plunge / bajada Z (mm/min)</label>
+          <input id="plunge" name="plunge" type="number" value="100" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="rpm">RPM / S del spindle</label>
+          <input id="rpm" name="rpm" type="number" value="1000" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="safeZ">Safe Z / Z segura (mm)</label>
+          <input id="safeZ" name="safeZ" type="number" value="5" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="returnFeed">Velocidad de regreso (mm/min)</label>
+          <input id="returnFeed" name="returnFeed" type="number" value="1200" step="1">
+          <div class="muted">El retorno sube a Z segura y vuelve al inicio con movimiento rápido.</div>
+        </div>
+
+        <div class="form-field">
+          <label for="tool">Herramienta</label>
+          <select id="tool" name="tool">
+            <option value="Fresa recta">Fresa recta</option>
+            <option value="Fresa de compresión">Fresa de compresión</option>
+            <option value="Fresa downcut">Fresa downcut</option>
+            <option value="Fresa upcut">Fresa upcut</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="axis">Eje de trabajo</label>
+          <select id="axis" name="axis">
+            <option value="x">X</option>
+            <option value="y">Y</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="cutDirection">Sentido respecto al movimiento de la fresadora</label>
+          <select id="cutDirection" name="cutDirection">
+            <option value="conventional">En contra</option>
+            <option value="climb">A favor</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="fileName">Nombre del archivo</label>
+          <input id="fileName" name="fileName" type="text" value="edge.nc">
+        </div>
+
         <div class="form-actions">
-          <button type="button" disabled>Generar próximamente</button>
+          <button id="generateButton" type="button">Generar G-code</button>
+          <button id="downloadButton" type="button">Descargar</button>
+          <button id="copyButton" type="button">Copiar</button>
         </div>
       </form>
+
+      <p id="edgeStatus" class="muted"></p>
+
+      <label class="form-field" for="output">
+        <span>Vista previa</span>
+        <textarea id="output" spellcheck="false" rows="22"></textarea>
+      </label>
     </section>
   </main>
+  <script src="../js/download.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../ui/common.js"></script>
+  <script src="../js/gcode/edge.js"></script>
+  <script src="../js/ui/edge-ui.js"></script>
 </body>
 </html>
