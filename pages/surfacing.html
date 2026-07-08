@@ -16,6 +16,14 @@
 
       <form class="tool-form" aria-label="Formulario Surfacing">
         <div class="form-field">
+          <label for="passMode">Modo</label>
+          <select id="passMode" name="passMode">
+            <option value="manual">Manual</option>
+            <option value="adaptive">Adaptive Passes</option>
+          </select>
+        </div>
+
+        <div class="form-field">
           <label for="strategy">Estrategia</label>
           <select id="strategy" name="strategy">
             <option value="zigzag">Zig Zag</option>
@@ -24,18 +32,6 @@
             <option value="rastery">Raster Y</option>
           </select>
           <div id="strategyStatus" class="muted"></div>
-        </div>
-
-        <div class="form-field">
-          <label for="smartSurfacing">Smart Surfacing</label>
-          <select id="smartSurfacing" name="smartSurfacing">
-            <option value="off">OFF</option>
-            <option value="conservative">Conservative</option>
-            <option value="balanced">Balanced</option>
-            <option value="aggressive">Aggressive</option>
-            <option value="custom">Custom</option>
-          </select>
-          <div class="muted">Interfaz preparada. Todavía no modifica los cálculos.</div>
         </div>
 
         <div class="form-field">
@@ -109,12 +105,21 @@
         </div>
       </form>
 
+      <section id="adaptivePanel" class="mode-panel" hidden>
+        <h2>Adaptive Passes</h2>
+        <p class="muted">Edita cada pasada como una hoja de cálculo. Las filas bloqueadas no se modifican automáticamente.</p>
+        <div id="adaptivePassesContainer"></div>
+      </section>
+
       <label class="form-field" for="output">
         <span>Vista previa</span>
         <textarea id="output" spellcheck="false" rows="22"></textarea>
       </label>
     </section>
   </main>
+  <script src="../js/storage.js"></script>
+  <script src="../ui/common.js"></script>
+  <script src="../js/ui/adaptive-passes.js"></script>
   <script src="../js/gcode/surfacing.js"></script>
   <script src="../js/ui/surfacing-ui.js"></script>
 </body>

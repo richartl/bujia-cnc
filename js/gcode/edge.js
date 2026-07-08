@@ -101,9 +101,74 @@
     return lines.join("\n");
   }
 
+  function generateEdgeAdaptiveGcode(parameters, adaptiveRows) {
+    const normalized = Object.assign({}, parameters, {
+      axis: parameters.axis === "y" ? "y" : "x",
+      cutDirection: parameters.cutDirection === "climb" ? "climb" : "conventional",
+      returnMode: "rapid-to-start",
+    });
+    const messages = validateEdgeParameters(normalized);
+
+    if (messages.some(function (message) { return message.startsWith("ERROR"); })) {
+      return messages.join("\n");
+    }
+
+    const axisLabel = normalized.axis.toUpperCase();
+    const directionLabel = normalized.cutDirection === "climb" ? "A favor" : "En contra";
+    const lines = [];
+
+    lines.push("%");
+    lines.push("( Cantos generado en navegador )");
+    lines.push("( Eje: " + axisLabel + ", longitud: " + clean(normalized.length) + " mm )");
+    lines.push("( Profundidad final: Z-" + clean(normalized.finalDepth) + " mm, modo Adaptive Passes )");
+    lines.push("( Sentido de corte: " + directionLabel + " )");
+    lines.push("( Herramienta: " + normalized.tool + " )");
+    lines.push("");
+
+    messages.forEach(function (message) { lines.push("( " + message + " )"); });
+    if (messages.length) lines.push("");
+
+    lines.push("G21");
+    lines.push("G90");
+    lines.push("G94");
+    lines.push("");
+    lines.push("M3 S" + clean(normalized.rpm));
+    lines.push("G4 P3");
+    lines.push("");
+    lines.push("G0 Z" + clean(normalized.safeZ));
+    lines.push("G0 X0 Y0");
+    lines.push("");
+
+    adaptiveRows.forEach(function (row, index) {
+      const depth = row.accumulatedDepth;
+      const feed = row.feedrate || normalized.feed;
+      const rpm = row.rpm || normalized.rpm;
+
+      lines.push("( ============================== )");
+      lines.push("( PASADA " + (index + 1) + " DE " + adaptiveRows.length + " - Z-" + clean(depth) + " )");
+      lines.push("( ============================== )");
+      lines.push("M3 S" + clean(rpm));
+      lines.push("G1 Z-" + clean(depth) + " F" + clean(normalized.plunge));
+      lines.push("G1 " + getCutMove(normalized) + " F" + clean(feed));
+      lines.push("G0 Z" + clean(normalized.safeZ));
+      lines.push("G0 X0 Y0 F" + clean(normalized.returnFeed));
+      lines.push("");
+    });
+
+    lines.push("G90");
+    lines.push("G0 Z" + clean(normalized.safeZ));
+    lines.push("G0 X0 Y0");
+    lines.push("M5");
+    lines.push("M30");
+    lines.push("%");
+
+    return lines.join("\n");
+  }
+
   window.BujiaEdgeGcode = {
     clean: clean,
     validateEdgeParameters: validateEdgeParameters,
     generateEdgeGcode: generateEdgeGcode,
+    generateEdgeAdaptiveGcode: generateEdgeAdaptiveGcode,
   };
 }());

@@ -1,4 +1,7 @@
 (function () {
+  let adaptiveController = null;
+  const MODE_STORAGE_KEY = "bujia.surfacing.passMode.v1";
+
   function byId(id) {
     return document.getElementById(id);
   }
@@ -41,6 +44,14 @@
     return byId("strategy").value;
   }
 
+  function getPassMode() {
+    return byId("passMode").value;
+  }
+
+  function isAdaptiveMode() {
+    return getPassMode() === "adaptive";
+  }
+
   function renderStrategyStatus() {
     const strategy = getSelectedStrategy();
     const status = byId("strategyStatus");
@@ -60,10 +71,25 @@
       return;
     }
 
+    if (isAdaptiveMode()) {
+      if (!adaptiveController.isValid()) {
+        byId("output").value = "Adaptive Passes no coincide con la profundidad objetivo. Corrige la tabla antes de generar G-code.";
+        return;
+      }
+
+      byId("output").value = window.BujiaSurfacingGcode.generateSurfacingAdaptiveGcode(getParameters(), adaptiveController.readRows());
+      return;
+    }
+
     byId("output").value = window.BujiaSurfacingGcode.generateSurfacingGcode(getParameters());
   }
 
   function downloadGcode() {
+    if (isAdaptiveMode() && !adaptiveController.isValid()) {
+      byId("output").value = "Adaptive Passes no coincide con la profundidad objetivo. No se permite descargar.";
+      return;
+    }
+
     if (!byId("output").value.trim()) generateGcode();
     if (byId("output").value.trim() === "Próximamente") return;
 
@@ -88,12 +114,24 @@
       .catch(function () { alert("No se pudo copiar automáticamente."); });
   }
 
+  function updateModeVisibility() {
+    byId("adaptivePanel").hidden = !isAdaptiveMode();
+    window.BujiaStorage.saveJson(MODE_STORAGE_KEY, { mode: getPassMode() });
+    generateGcode();
+  }
+
+  function restoreMode() {
+    const savedMode = window.BujiaStorage.loadJson(MODE_STORAGE_KEY, { mode: "manual" });
+    if (savedMode.mode === "adaptive" || savedMode.mode === "manual") byId("passMode").value = savedMode.mode;
+  }
+
   function bindEvents() {
     byId("generateButton").addEventListener("click", generateGcode);
     byId("downloadButton").addEventListener("click", downloadGcode);
     byId("copyButton").addEventListener("click", copyGcode);
     byId("toolDia").addEventListener("input", updateSuggestion);
     byId("toolDia").addEventListener("change", updateSuggestion);
+    byId("passMode").addEventListener("change", updateModeVisibility);
     byId("strategy").addEventListener("change", function () {
       renderStrategyStatus();
       if (getSelectedStrategy() !== "zigzag") byId("output").value = "Próximamente";
@@ -101,10 +139,20 @@
   }
 
   function initSurfacingUi() {
+    adaptiveController = window.BujiaAdaptivePasses.createAdaptivePassesController({
+      storageKey: "bujia.surfacing.adaptive.v1",
+      containerId: "adaptivePassesContainer",
+      finalDepthInputId: "totalZ",
+      passCountInputId: "zPasses",
+      defaultFeedInputId: "feedRate",
+      defaultRpmInputId: "spindle",
+    });
+    adaptiveController.init();
+    restoreMode();
     bindEvents();
     updateSuggestion();
     renderStrategyStatus();
-    generateGcode();
+    updateModeVisibility();
   }
 
   window.BujiaSurfacingUi = {
