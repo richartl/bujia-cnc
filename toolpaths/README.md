@@ -1,39 +1,11 @@
-# Toolpath Strategies
+# Nota sobre `toolpaths`
 
-Este módulo separa la estrategia de recorrido del generador de G-code.
+Este módulo pertenece a una iteración previa que separaba estrategias de recorrido dentro de una arquitectura más cercana a CAM.
 
-## Regla principal
+La nueva visión prioriza páginas independientes por herramienta. Un módulo de recorridos puede seguir siendo útil para una herramienta concreta, pero no debe convertirse en núcleo global obligatorio.
 
-Las estrategias generan Toolpaths neutrales. No generan G-code.
+## Regla actual
 
-El flujo correcto es:
-
-```text
-Strategy -> Toolpath -> G-code renderer
-```
-
-Nunca:
-
-```text
-Strategy -> G-code
-```
-
-## Estrategias iniciales
-
-- `zigzag`: estrategia por defecto; conserva el recorrido actual.
-- `oneway`: recorrido inicial de una sola orientación.
-- `rasterx`: raster con eje principal X conceptual.
-- `rastery`: raster con eje principal Y conceptual.
-
-## Interfaz obligatoria
-
-Cada estrategia debe implementar:
-
-- `generate(parameters)`
-- `estimateTime(toolpath, context)`
-- `estimateDistance(toolpath, context)`
-- `validate(parameters, context)`
-
-## Compatibilidad
-
-`zigzag` debe seguir existiendo y debe conservar el comportamiento actual por defecto.
+- Surfacing puede usar estrategias si se aprueba.
+- Otras herramientas no deben depender de `toolpaths/` salvo necesidad clara.
+- El proyecto debe seguir siendo una caja de herramientas simple.

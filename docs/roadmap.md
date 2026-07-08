@@ -1,36 +1,60 @@
 # Roadmap
 
-## Fase 1: Surfacing
+## Fase 1: Replanteamiento documental
 
-- Documentar completamente el comportamiento actual del HTML de surfacing.
-- Mantener la lógica existente sin cambios hasta contar con aprobación explícita para refactorizar.
-- Preservar compatibilidad con ejecución offline, sin servidor, sin build y sin frameworks.
-- Añadir pruebas manuales documentadas para validar el G-code generado antes de cualquier cambio funcional.
+- Cambiar la visión de CAM ligero a caja de herramientas CNC.
+- Simplificar arquitectura y dominio.
+- Eliminar conceptos globales innecesarios de la documentación.
+- Mantener intacto el generador actual.
 
-## Fase 2: Modularización segura
+## Fase 2: Menú principal
 
-- Proponer una separación gradual de lógica desde `index.html` hacia módulos bajo `js/`.
-- Definir pruebas de regresión antes de mover funciones existentes.
-- No cambiar nombres de entradas, salida ni formato de G-code sin aprobación.
+- Convertir `index.html` en menú principal.
+- Agregar enlaces hacia páginas independientes.
+- Mantener acceso al surfacing actual durante la migración.
 
-## Fase 3: Cantos
+## Fase 3: Surfacing independiente
 
-- Agregar operaciones para cantos cuando la especificación funcional esté definida.
-- Mantener documentación separada entre surfacing y nuevas operaciones.
+- Crear `pages/surfacing.html`.
+- Migrar el generador actual sin cambiar su G-code aprobado.
+- Comparar salida antes/después.
 
-## Fase 4: Biblioteca de herramientas
+## Fase 4: Utilidades compartidas mínimas
 
-- Definir una biblioteca de herramientas con diámetro, feeds recomendados y parámetros reutilizables.
-- Mantener las recomendaciones como ayuda al usuario, sin reemplazar la validación explícita.
+Extraer solo lo que realmente se repite:
 
-## Fase 5: Visualizador
+- Copiar al portapapeles.
+- Descargar archivo.
+- Formatear números.
+- Mostrar errores.
 
-- Explorar un visualizador simple de trayectorias.
-- Evitar dependencias externas salvo aprobación explícita.
-- Mantener la app usable como archivo local.
+## Fase 5: Nuevas herramientas
 
-## Deuda técnica identificada
+Agregar páginas independientes:
 
-- La espera del spindle está fija en `G4 P3`; el requisito de seguridad indica que debe ser configurable en el futuro.
-- La lógica funcional está embebida en `index.html`; modularizarla facilitaría mantenimiento, pero puede introducir riesgos de regresión.
-- Los archivos bajo `js/` están preparados como estructura futura, pero aún no implementan la lógica activa.
+- Cantos.
+- Ranuras.
+- Taladros.
+- Cavidades.
+- Perfilados.
+- Escalas.
+
+## Fase 6: Casos de regresión
+
+- Crear salidas esperadas por herramienta.
+- Comparar G-code generado contra casos conocidos.
+- Nunca actualizar salidas esperadas automáticamente.
+
+## Decisiones aplazadas
+
+- Si se necesita configuración global.
+- Si alguna herramienta necesita vista previa 2D.
+- Si conviene tener helpers G-code compartidos.
+- Si alguna página requiere datos predefinidos locales.
+
+## Riesgos
+
+- Convertir de nuevo el proyecto en un CAM complejo.
+- Agregar configuraciones globales antes de necesitarlas.
+- Romper el surfacing existente durante la migración.
+- Crear archivos gigantes en vez de páginas simples.

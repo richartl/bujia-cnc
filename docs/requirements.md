@@ -1,54 +1,73 @@
-# Requisitos
+# Requerimientos
 
-## Alcance actual
+## Objetivo del producto
 
-El proyecto debe mantener compatibilidad hacia atrás con el generador de surfacing existente en `index.html`. La funcionalidad actual es un generador de G-code CNC que corre completamente en el navegador y está orientado a operaciones repetitivas de luthería y carpintería.
+Bujia CNC debe ser una colección de herramientas CNC independientes para operaciones repetitivas de taller.
 
-## Especificación del HTML actual
+No es un CAM completo. No debe gestionar proyectos complejos ni obligar al usuario a configurar máquina, material o bibliotecas globales antes de generar G-code.
 
-### Objetivo
+## Requerimientos principales
 
-El HTML actual genera G-code para surfacing CNC desde el navegador, sin backend y sin dependencias externas.
+1. La aplicación debe abrirse desde `index.html`.
+2. `index.html` debe actuar como menú principal.
+3. Cada operación debe vivir en una página independiente.
+4. Cada herramienta debe pedir la menor cantidad posible de datos.
+5. Cada herramienta debe generar una salida clara y descargable.
+6. Todo debe funcionar offline.
+7. No debe requerir servidor.
+8. No debe requerir build.
+9. No debe requerir frameworks.
+10. No debe romper el surfacing existente.
 
-### Entradas del formulario
+## Herramientas iniciales y futuras
 
-El formulario actual del generador de surfacing incluye las siguientes entradas:
+- Surfacing.
+- Cantos.
+- Ranuras.
+- Taladros.
+- Cavidades.
+- Perfilados.
+- Escalas.
 
-- **Distancia total en X / ancho a cubrir en mm**: ancho total del área que se va a cubrir sobre el eje X.
-- **Distancia en Y / largo de cada pasada en mm**: longitud de cada recorrido de corte sobre el eje Y.
-- **Número de pasadas de profundidad Z**: cantidad de niveles de profundidad que se ejecutarán hasta alcanzar la profundidad total.
-- **Profundidad total en Z a recorrer en mm**: profundidad final de corte, expresada como valor positivo en el formulario y emitida como `Z-valor` en el G-code.
-- **Feedrate de corte XY en mm/min**: velocidad de avance para movimientos de corte en X/Y.
-- **Feedrate de bajada Z en mm/min**: velocidad de avance para entrar en material sobre el eje Z.
-- **Distancia que avanza X en cada pasada / stepover en mm**: incremento lateral en X entre recorridos sucesivos en Y.
-- **Diámetro de fresa en mm**: diámetro de la herramienta usado para sugerir stepover y advertir configuraciones peligrosas.
-- **RPM / S del spindle**: valor `S` usado al encender el spindle con `M3`.
-- **Z seguro para movimientos rápidos en mm**: altura usada para movimientos rápidos sin corte.
-- **Nombre del archivo**: nombre de descarga del G-code generado.
-- **Dirección inicial**: permite elegir si la primera pasada de Y va en dirección positiva o negativa.
+## Requerimientos de interfaz
 
-### Validaciones actuales
+Cada página debe:
 
-El HTML actual valida errores básicos antes de generar el G-code:
+- Ser simple.
+- Usar pocos campos.
+- Mostrar advertencias claras.
+- Permitir visualizar el G-code.
+- Permitir copiar el G-code.
+- Permitir descargar el archivo.
 
-- X e Y deben ser mayores a `0`.
-- El stepover debe ser mayor a `0`.
-- La profundidad total Z debe ser mayor a `0`.
-- Los feedrates de corte XY y bajada Z deben ser mayores a `0`.
-- Si el stepover es mayor al diámetro de la herramienta, se genera una advertencia, pero no se bloquea la salida.
+## Requerimientos técnicos
 
-## Requisitos técnicos
+- HTML5, CSS3 y JavaScript nativo.
+- ES Modules solo cuando ayuden a mantener orden.
+- Sin dependencias externas obligatorias.
+- Sin servidor HTTP obligatorio.
+- Sin base de datos externa.
+- Preferencias opcionales con LocalStorage.
 
-- La app debe funcionar offline.
-- No debe requerir servidor.
-- No debe requerir build.
-- No debe usar frameworks.
-- Debe poder abrirse como archivo local.
-- Debe funcionar en Chrome, Edge, Safari y Firefox.
-- Debe mantenerse fácil de modificar.
+## Requerimientos de compatibilidad
 
-## Reglas de compatibilidad
+- Chrome.
+- Edge.
+- Firefox.
+- Safari.
 
-- No se debe cambiar una funcionalidad existente sin documentar primero el archivo, función, comportamiento afectado, riesgo y alternativa propuesta.
-- La lógica actual del generador de surfacing debe conservarse hasta que se apruebe explícitamente cualquier cambio funcional.
-- La documentación debe distinguir entre comportamiento existente, requisitos deseados y trabajo futuro.
+## Requerimientos de seguridad G-code
+
+Cada herramienta que genere G-code debe documentar sus reglas de seguridad. Como mínimo:
+
+- Declarar unidades.
+- Declarar modo absoluto o relativo cuando corresponda.
+- Subir a Z seguro antes de movimientos rápidos.
+- No regresar al origen cortando.
+- Apagar spindle al finalizar si la herramienta lo enciende.
+- Terminar de forma clara.
+- Generar G-code legible y comentado.
+
+## Requerimientos de pruebas
+
+Cada herramienta debe tener casos conocidos para detectar cambios accidentales de salida. Las salidas esperadas no deben actualizarse automáticamente.

@@ -1,78 +1,15 @@
-# Recommendations Engine
+# Nota sobre `core/recommendations`
 
-Este módulo calcula recomendaciones para operaciones CNC sin generar G-code.
+Este módulo pertenece a una iteración anterior orientada a un Recommendations Engine global.
 
-## Responsabilidad
+La visión actual elimina el motor global de recomendaciones como pieza central. Las sugerencias deben ser locales a cada herramienta cuando sean útiles.
 
-El motor recomienda automáticamente:
+## Estado
 
-- RPM.
-- Feedrate.
-- Plunge.
-- Profundidad por pasada.
-- Stepover.
-- Porcentaje de stepover.
-- Número recomendado de pasadas.
-- Advertencias.
-- Nivel de confianza.
-- Explicaciones.
+- No debe expandirse sin aprobación.
+- No debe ser requisito para generar G-code.
+- No debe obligar a seleccionar máquina, material o biblioteca global.
 
-## Entradas
+## Nueva regla
 
-La función principal recibe un objeto con:
-
-- `tool`.
-- `material`.
-- `machine`.
-- `operation`.
-
-Los objetos pueden ser parciales. Si faltan datos, el motor devuelve recomendaciones parciales, advertencias y menor confianza.
-
-## Salida
-
-La salida es un objeto `Recommendation`:
-
-```js
-{
-  recommendedRPM: number | null,
-  recommendedFeed: number | null,
-  recommendedPlunge: number | null,
-  recommendedDepthPerPass: number | null,
-  recommendedStepover: number | null,
-  recommendedStepoverPercent: number | null,
-  recommendedPasses: number | null,
-  warnings: [
-    {
-      code: string,
-      message: string,
-      severity: "info" | "warning" | "error"
-    }
-  ],
-  confidence: "low" | "medium" | "high",
-  explanation: string[]
-}
-```
-
-## Uso conceptual
-
-```js
-import { getRecommendations } from "./core/recommendations/recommendations.js";
-
-const recommendation = getRecommendations({ tool, material, machine, operation });
-```
-
-## Reglas importantes
-
-- No genera G-code.
-- No modifica `generateGcode()`.
-- No modifica Toolpaths.
-- No modifica operaciones.
-- No lee ni escribe en el DOM.
-- No descarga archivos.
-- No copia al portapapeles.
-- No usa dependencias externas.
-- Usa JavaScript puro y ES Modules.
-
-## Compatibilidad
-
-Este módulo está aislado del generador actual. Prepararlo no cambia el comportamiento existente de `index.html` ni el formato actual del G-code.
+Cada herramienta puede sugerir valores simples y seguros para su operación, pero debe hacerlo sin complicar la interfaz ni crear dependencia global.

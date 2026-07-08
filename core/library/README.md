@@ -1,37 +1,15 @@
-# Library Module
+# Nota sobre `core/library`
 
-Este módulo carga catálogos locales para herramientas, materiales, máquinas, estrategias y defaults.
+Este módulo pertenece a una iteración anterior orientada a bibliotecas globales de herramientas, materiales y máquinas.
 
-## Archivos de configuración
+La visión actual del proyecto cambió: Bujia CNC será una caja de herramientas independientes. Por lo tanto, una biblioteca global ya no forma parte de la arquitectura objetivo.
 
-Los datos viven en:
+## Estado
 
-- `config/tools.json`
-- `config/materials.json`
-- `config/machines.json`
-- `config/strategies.json`
-- `config/defaults.json`
+- No debe expandirse sin aprobación.
+- No debe convertirse en requisito para usar ninguna herramienta.
+- No debe condicionar la futura migración a `pages/`.
 
-Los JSON originales son de solo lectura para la aplicación. Las preferencias del usuario se guardan en LocalStorage.
+## Nueva regla
 
-## Responsabilidades
-
-- Cargar catálogos.
-- Buscar elementos por `id`.
-- Filtrar herramientas, materiales y máquinas.
-- Actualizar selección activa.
-- Guardar preferencias del usuario en LocalStorage.
-- Entregar el contexto seleccionado para el Recommendations Engine.
-
-## Restricciones
-
-- No genera G-code.
-- No modifica `generateGcode()`.
-- No modifica los JSON originales.
-- No requiere servidor.
-- No requiere build.
-- No usa dependencias externas.
-
-## Nota sobre carga local
-
-Cuando `index.html` se abre con doble click, algunos navegadores pueden bloquear `fetch()` hacia archivos JSON locales por políticas de seguridad. El módulo devuelve un `loadError` controlado para que la aplicación siga funcionando y pueda mostrar una advertencia sin romper el generador actual.
+Cada página puede tener presets locales y opcionales si aportan valor, pero no debe requerir una biblioteca global para funcionar.

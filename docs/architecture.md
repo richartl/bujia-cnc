@@ -1,61 +1,83 @@
 # Arquitectura
 
+## Resumen
+
+Bujia CNC es una caja de herramientas CNC offline. La arquitectura ya no debe orientarse a un CAM completo con proyecto, bibliotecas globales y motor central. Debe orientarse a páginas independientes, cada una dedicada a una operación repetitiva del taller.
+
 ## Estado actual
 
-El proyecto usa HTML, CSS y JavaScript puro. La implementación funcional actual vive en `index.html` como una página autocontenida que puede abrirse directamente en el navegador.
+La implementación funcional actual vive en `index.html` y genera G-code de surfacing. Ese comportamiento es existente y no debe romperse.
 
-## Especificación del HTML actual
+## Arquitectura objetivo
 
-### Objetivo
+```text
+index.html
+└── Menú principal
+    └── pages/
+        ├── surfacing.html
+        ├── edge.html
+        ├── slots.html
+        ├── drilling.html
+        ├── pockets.html
+        └── settings.html
+```
 
-El HTML actual genera G-code para surfacing CNC desde el navegador, sin backend y sin dependencias externas.
+## Responsabilidades
 
-### Componentes actuales
+### `index.html`
 
-- **Interfaz HTML**: formulario de parámetros, botones de acción y área de texto para visualizar el G-code generado.
-- **CSS embebido**: estilos simples para usar la app como herramienta local de taller.
-- **JavaScript embebido**:
-  - Lectura de valores del formulario.
-  - Limpieza/formato de números.
-  - Sugerencia de stepover a partir del diámetro de fresa.
-  - Validación básica de entradas.
-  - Generación de G-code de surfacing.
-  - Descarga del archivo generado.
-  - Copia del G-code al portapapeles.
+- Ser la puerta de entrada.
+- Mostrar un menú simple de herramientas.
+- No contener lógica compleja de todas las operaciones.
 
-## Entradas del formulario actual
+### `pages/*.html`
 
-- Distancia total en X / ancho a cubrir en mm.
-- Distancia en Y / largo de cada pasada en mm.
-- Número de pasadas de profundidad Z.
-- Profundidad total en Z a recorrer en mm.
-- Feedrate de corte XY en mm/min.
-- Feedrate de bajada Z en mm/min.
-- Distancia que avanza X en cada pasada / stepover en mm.
-- Diámetro de fresa en mm.
-- RPM / S del spindle.
-- Z seguro para movimientos rápidos en mm.
-- Nombre del archivo.
-- Dirección inicial: primero Y positivo o primero Y negativo.
+Cada página:
 
-## Flujo actual
+- Resuelve una operación concreta.
+- Tiene su propio formulario.
+- Valida sus propios datos.
+- Genera su propio G-code o usa módulos compartidos mínimos.
+- Permite copiar/descargar su salida.
 
-1. Al cargar la página, se calcula la sugerencia de stepover y se genera un G-code inicial con los valores por defecto.
-2. El usuario ajusta parámetros del formulario.
-3. Al presionar **Generar G-code**, se validan entradas y se actualiza el área de texto.
-4. Al presionar **Descargar .nc**, si no hay salida previa se genera el G-code y luego se descarga el archivo.
-5. Al presionar **Copiar**, si no hay salida previa se genera el G-code y luego se intenta copiar al portapapeles.
+### `shared/` futuro
 
-## Requisitos técnicos de arquitectura
+Solo debe contener utilidades pequeñas compartidas:
 
-- La app debe funcionar offline.
-- No debe requerir servidor.
-- No debe requerir build.
-- No debe usar frameworks.
-- Debe poder abrirse como archivo local.
-- Debe funcionar en Chrome, Edge, Safari y Firefox.
-- Debe mantenerse fácil de modificar.
+- Descarga de archivos.
+- Copia al portapapeles.
+- Formateo numérico.
+- Validaciones simples.
+- Helpers G-code comunes.
 
-## Módulos preparados
+No debe convertirse en núcleo CAM global.
 
-Existen archivos JavaScript separados bajo `js/` para una arquitectura modular futura, pero actualmente contienen marcadores `TODO`. La lógica activa del generador no debe moverse ni refactorizarse sin confirmación previa porque eso podría modificar o romper comportamiento existente.
+## Herramientas previstas
+
+- Surfacing.
+- Cantos.
+- Ranuras.
+- Taladros.
+- Cavidades.
+- Perfilados.
+- Escalas.
+- Plantillas.
+
+## Conceptos eliminados de la arquitectura objetivo
+
+Los siguientes conceptos no forman parte de la nueva arquitectura base:
+
+- CAM completo.
+- Proyecto global obligatorio.
+- Machine Library global.
+- Material Library global.
+- Recommendation Engine global.
+- Simulador global.
+- PostProcessor global obligatorio.
+- Plugin API pesada.
+
+Pueden existir helpers locales o datos mínimos por herramienta si aportan valor sin complicar el flujo.
+
+## Compatibilidad
+
+La migración debe hacerse por fases. El surfacing actual debe conservar su salida hasta que exista comparación contra salidas esperadas y aprobación explícita para cualquier cambio.
