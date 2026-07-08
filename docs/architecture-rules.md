@@ -1,16 +1,28 @@
-# Architecture Rules: Reglas absolutas del proyecto
+# Architecture Rules: Reglas técnicas absolutas del proyecto
 
 ## Propósito
 
-Este documento define las reglas absolutas de arquitectura del proyecto. Estas reglas existen para proteger la portabilidad, longevidad, simplicidad y mantenibilidad del CAM ligero CNC.
+Este documento es una extensión técnica de `docs/design-principles.md`. Define las reglas arquitectónicas absolutas del proyecto y debe leerse antes de proponer cualquier cambio estructural, dependencia, herramienta, módulo o flujo de ejecución.
 
-Ninguna decisión técnica debe romper estas reglas sin una aprobación explícita, documentada y excepcional.
+Estas reglas existen para proteger la portabilidad, longevidad, simplicidad, compatibilidad offline y mantenibilidad del CAM ligero CNC.
 
-## Regla más importante
+Estas reglas nunca deberán romperse sin una aprobación explícita, documentada y excepcional.
 
-Este software siempre deberá ejecutarse únicamente abriendo `index.html`.
+## La regla más importante del proyecto
 
-El flujo obligatorio de uso es:
+Este software siempre deberá poder ejecutarse simplemente abriendo:
+
+```text
+index.html
+```
+
+No importa cuánto crezca el proyecto.
+
+No importa cuántos módulos existan.
+
+No importa cuántas operaciones existan.
+
+Siempre deberá funcionar así:
 
 ```text
 Doble click
@@ -20,18 +32,46 @@ index.html
 La aplicación funciona
 ```
 
+Esta regla es innegociable.
+
 El proyecto no debe requerir nada más para su uso básico.
 
-## Prohibiciones absolutas
+## Tecnologías permitidas
 
-No se debe convertir el proyecto en una aplicación que dependa de:
+El proyecto deberá utilizar únicamente tecnologías soportadas nativamente por el navegador.
+
+Tecnologías permitidas:
+
+- HTML5.
+- CSS3.
+- JavaScript ES6 Modules.
+- Canvas API.
+- SVG.
+- LocalStorage.
+- IndexedDB.
+- Clipboard API.
+- Blob API.
+- File API.
+- Drag & Drop API.
+- Web Workers, si alguna vez son necesarios.
+- OffscreenCanvas, si alguna vez es útil y compatible con el objetivo de navegadores.
+- Fetch API únicamente para leer archivos locales del proyecto cuando sea posible y sin introducir un servidor obligatorio.
+
+Estas tecnologías permiten construir una herramienta poderosa sin sacrificar portabilidad ni simplicidad.
+
+## Tecnologías prohibidas
+
+No se debe depender de herramientas externas para ejecutar la aplicación.
+
+Quedan prohibidos como requisito para usar la aplicación básica:
 
 - NodeJS.
 - npm.
 - pnpm.
 - yarn.
-- Vite.
+- bun.
 - Webpack.
+- Vite.
 - Rollup.
 - Parcel.
 - Angular.
@@ -39,41 +79,31 @@ No se debe convertir el proyecto en una aplicación que dependa de:
 - Vue.
 - Svelte.
 - Backend.
+- Express.
 - Docker.
-- Servidor HTTP.
 - Base de datos externa.
-- Compilación.
-- Build.
-- Bundling.
+- Servidor HTTP obligatorio.
+- Compilación obligatoria.
+- Bundlers.
+- Transpiladores.
+- Frameworks que impidan abrir `index.html` directamente.
 - Minificación obligatoria.
 - Instalaciones obligatorias.
 - Internet para funcionar.
 
-La app básica debe seguir funcionando aunque el usuario no tenga herramientas de desarrollo instaladas.
+La aplicación básica debe seguir funcionando aunque el usuario no tenga herramientas de desarrollo instaladas.
 
-## Tecnologías permitidas
+## Filosofía técnica
 
-El proyecto debe desarrollarse utilizando tecnologías soportadas de forma nativa por navegadores modernos.
+La aplicación debe ser:
 
-Tecnologías permitidas y preferidas:
+- Portable.
+- Duradera.
+- Simple.
+- Fácil de mantener.
+- Capaz de ejecutarse dentro de diez años únicamente con un navegador.
 
-- HTML5.
-- CSS3.
-- JavaScript moderno.
-- JavaScript ES6 Modules.
-- `import`.
-- `export`.
-- Canvas API.
-- SVG.
-- LocalStorage.
-- IndexedDB.
-- Web Workers, si alguna vez son necesarios.
-- File API.
-- Blob API.
-- Clipboard API.
-- Drag & Drop API.
-
-Estas tecnologías permiten construir una herramienta poderosa sin sacrificar portabilidad ni simplicidad.
+La arquitectura debe rechazar cualquier solución que mejore la comodidad del desarrollador a costa de empeorar la experiencia básica del usuario: abrir `index.html` y trabajar.
 
 ## Por qué esta decisión es importante
 
@@ -107,27 +137,35 @@ La app debe poder funcionar en un taller sin conexión. La documentación tambi�
 
 No depender de paquetes externos reduce riesgos de seguridad, abandono, cambios incompatibles y fallas por versiones.
 
-## Modularidad obligatoria
+## Arquitectura modular obligatoria
 
-Aunque todo funcione desde `index.html`, el proyecto debe estar internamente modularizado.
+Aunque todo funcione desde `index.html`, internamente el proyecto deberá crecer mediante módulos.
 
-La arquitectura objetivo debe seguir esta dirección:
+Nunca debe crecer mediante archivos enormes.
+
+La arquitectura objetivo deberá parecerse a:
 
 ```text
 index.html
 ↓
 js/app.js
 ↓
-core
+core/
 ↓
-operations
+operations/
 ↓
-toolpaths
+toolpaths/
 ↓
-postprocessors
+postprocessors/
 ↓
-ui
+simulation/
+↓
+ui/
+↓
+utils/
 ```
+
+Cada carpeta deberá tener una única responsabilidad.
 
 Cada módulo debe poder crecer de forma independiente.
 
@@ -140,20 +178,23 @@ La modularidad debe permitir agregar:
 - Nuevos simuladores.
 - Nuevas bibliotecas de herramientas.
 - Nuevas bibliotecas de materiales.
+- Nuevas validaciones.
+- Nuevas estrategias de prueba.
 
 Sin convertir el proyecto en una aplicación dependiente de herramientas externas.
 
 ## Reglas de imports
 
-Todos los módulos JavaScript deberán usar exclusivamente ES Modules nativos:
+Todos los módulos JavaScript deberán usar únicamente ES Modules nativos:
 
 - `import`.
 - `export`.
+- ES Modules.
 
-No se permite:
+Nunca se permite:
 
-- CommonJS.
 - `require()`.
+- CommonJS.
 - Bundlers obligatorios.
 - Transformaciones obligatorias.
 - Código que solo funcione después de compilarse.
@@ -162,14 +203,22 @@ Los módulos deben poder ser entendidos como archivos JavaScript estándar del n
 
 ## Dependencias externas
 
-La regla general es: no usar dependencias externas.
+La política del proyecto será:
 
-Si una funcionalidad puede desarrollarse utilizando JavaScript puro y APIs nativas del navegador, debe preferirse esa solución.
+```text
+JavaScript puro primero.
+```
 
-Agregar una dependencia solo puede considerarse si existe una justificación muy fuerte, documentada y aprobada. La justificación debe explicar:
+Si existe una API nativa del navegador para resolver un problema, deberá utilizarse.
+
+Agregar una dependencia externa deberá ser la última opción.
+
+Si alguna IA o desarrollador considera necesario agregar una dependencia, deberá justificar:
 
 - Qué problema resuelve.
-- Por qué no puede resolverse razonablemente con JavaScript puro.
+- Por qué JavaScript puro no es suficiente.
+- Qué ventajas aporta.
+- Qué impacto tiene.
 - Cuánto pesa.
 - Qué riesgo introduce.
 - Cómo afecta el uso offline.
@@ -177,13 +226,15 @@ Agregar una dependencia solo puede considerarse si existe una justificación muy
 - Qué alternativa sin dependencia se evaluó.
 - Cómo se preservará el funcionamiento abriendo `index.html`.
 
+Nunca se deben agregar dependencias sin aprobación.
+
 Una dependencia nunca debe convertir el proyecto en una app que requiera instalación, build o servidor.
 
 ## Estructura y crecimiento
 
 El proyecto debe poder crecer hasta cientos de archivos sin perder simplicidad.
 
-Toda nueva funcionalidad debe agregarse como un módulo nuevo o como una extensión clara de un módulo existente.
+Toda nueva funcionalidad deberá agregarse como un módulo nuevo o como una extensión clara de un módulo existente.
 
 No se debe crecer mediante:
 
@@ -197,9 +248,15 @@ El objetivo es que cada archivo tenga una responsabilidad clara.
 
 ## Performance
 
-La aplicación debe cargar rápido.
+El proyecto debe iniciar muy rápido.
+
+No se quieren tiempos largos de carga.
+
+No se quieren megabytes innecesarios.
 
 No se permiten frameworks gigantes ni librerías de varios megabytes para resolver problemas que pueden resolverse con APIs nativas.
+
+La aplicación debe seguir siendo ligera aunque existan cientos de módulos.
 
 Principios de performance:
 
@@ -209,6 +266,7 @@ Principios de performance:
 - Evitar trabajo innecesario al iniciar.
 - Preferir cálculos claros y deterministas.
 - Usar Web Workers solo si una tarea pesada lo justifica.
+- Usar OffscreenCanvas solo si aporta valor real y no rompe compatibilidad.
 
 La arquitectura debe permitir crecer sin hacer que abrir `index.html` sea lento.
 
@@ -227,10 +285,12 @@ Si una API nativa no está soportada de forma consistente, debe documentarse el 
 
 ## Offline
 
-Toda la aplicación debe funcionar sin internet.
+Todo debe funcionar sin internet.
 
 Esto incluye:
 
+- Toda la aplicación.
+- Toda la documentación.
 - Generación de G-code.
 - Formularios.
 - Sugerencias.
@@ -238,22 +298,20 @@ Esto incluye:
 - Simulación futura.
 - Bibliotecas locales.
 - Configuración.
-- Documentación.
-
-La documentación del proyecto debe poder consultarse offline desde los archivos del repositorio.
+- Importación y exportación de proyectos locales.
 
 No se deben cargar scripts, estilos, fuentes, datos o documentación desde CDNs o servicios externos para el funcionamiento básico.
 
 ## Almacenamiento
 
-Toda configuración debe guardarse utilizando tecnologías soportadas por el navegador.
+Las configuraciones del usuario deberán guardarse utilizando únicamente tecnologías del navegador.
 
 Opciones preferidas:
 
 - LocalStorage.
 - IndexedDB.
 
-No se permite requerir una base de datos externa para el uso básico.
+Nunca se debe depender de una base de datos externa para el uso básico.
 
 Reglas de almacenamiento:
 
@@ -263,31 +321,145 @@ Reglas de almacenamiento:
 - El usuario debe poder trabajar offline.
 - El almacenamiento local no debe ocultar información crítica que impida reproducir un trabajo.
 
-## Objetivo de diez años
+## Modularidad de operaciones
 
-Este proyecto debe poder seguir funcionando exactamente igual dentro de diez años.
+Cada operación deberá ser independiente.
 
-Debe seguir siendo posible abrir:
+Ejemplos de operaciones futuras:
+
+- Surfacing.
+- Edge Surfacing.
+- Pocket.
+- Contour.
+- Slots.
+- Drilling.
+- Neck Radius.
+- Pickup Cavities.
+- Control Cavities.
+- Bridge Holes.
+- String Through.
+
+Cada una deberá implementarse como un módulo independiente.
+
+Eliminar, deshabilitar o modificar una operación nunca deberá romper otra.
+
+Cada operación deberá implementar la misma API conceptual documentada en `docs/plugin-api.md`.
+
+## Postprocesadores
+
+El núcleo del proyecto nunca deberá conocer el formato final del G-code.
+
+El flujo obligatorio deberá ser:
 
 ```text
-index.html
+Operation
+↓
+Toolpath
+↓
+PostProcessor
+↓
+GCode
 ```
 
-y comenzar a trabajar.
+Nunca deberá ser:
 
-Esto debe seguir siendo cierto aunque el proyecto tenga:
+```text
+Operation
+↓
+GCode
+```
+
+Inicialmente existirá soporte para:
+
+- GRBL.
+
+Pero la arquitectura deberá poder soportar en el futuro:
+
+- FluidNC.
+- LinuxCNC.
+- Mach3.
+- Marlin.
+- Masso.
+- Centroid.
+
+Sin modificar el núcleo del software.
+
+Cada postprocesador deberá ser un módulo independiente que traduzca Toolpaths neutrales a un dialecto específico de G-code.
+
+## Simulador
+
+El simulador será otro módulo independiente.
+
+Inicialmente será 2D.
+
+No dependerá del generador de G-code.
+
+No dependerá del postprocesador.
+
+Consumirá únicamente Toolpaths.
+
+Esto permitirá:
+
+- Simulación.
+- Visualización.
+- Estimación de tiempo.
+- Cobertura.
+- Trayectoria.
+- Sentido de corte.
+- Punto inicial.
+- Punto final.
+- Área mecanizada.
+- Área pendiente.
+
+Sin conocer el formato final de G-code.
+
+## Pruebas
+
+Todo cambio deberá poder compararse contra Golden Files.
+
+Reglas absolutas:
+
+- Nunca modificar automáticamente los Golden Files.
+- Siempre mostrar diferencias.
+- Siempre explicar diferencias.
+- Siempre detenerse si el G-code cambia sin aprobación.
+- Siempre mantener salidas deterministas.
+
+Las pruebas deben proteger:
+
+- Formato de G-code.
+- Orden de comandos.
+- Unidades.
+- Modos absoluto/relativo.
+- Movimientos a Z seguro.
+- Encendido y apagado de spindle.
+- Dwell del spindle.
+- Comentarios relevantes.
+- Compatibilidad con postprocesadores.
+
+## Objetivo final
+
+Este proyecto debe poder crecer durante muchos años.
+
+Debe poder contener:
 
 - Cientos de módulos.
 - Decenas de operaciones.
-- Simulador 2D.
+- Múltiples simuladores.
+- Múltiples postprocesadores.
 - Biblioteca de herramientas.
 - Biblioteca de materiales.
-- Múltiples postprocesadores.
 - Golden Files.
 - Configuraciones locales.
 - Exportación e importación de proyectos.
 
-El crecimiento del proyecto nunca debe romper la experiencia básica de doble click.
+Debe seguir siendo extremadamente sencillo para el usuario.
+
+Y siempre deberá poder abrirse simplemente haciendo doble click sobre:
+
+```text
+index.html
+```
 
 ## Relación con la arquitectura modular
 
@@ -315,7 +487,7 @@ La solución correcta es una aplicación modular con tecnologías nativas del na
 Antes de aceptar cualquier cambio arquitectónico, se debe responder:
 
 - ¿Sigue funcionando con doble click en `index.html`?
-- ¿Requiere Node, npm, build o servidor?
+- ¿Requiere Node, npm, pnpm, yarn, bun, build o servidor?
 - ¿Agrega alguna dependencia externa?
 - ¿Funciona offline?
 - ¿Funciona en Chrome, Edge, Firefox y Safari?
@@ -331,47 +503,53 @@ Si alguna respuesta pone en riesgo la regla de `index.html`, el cambio debe rech
 
 Estas reglas son obligatorias para cualquier IA que trabaje en este proyecto.
 
-1. **Nunca proponer frameworks.**
-   No proponer React, Vue, Angular, Svelte ni frameworks similares para la app básica.
+1. **Siempre leer toda la documentación.**
+   Como mínimo: `README.md`, todos los documentos en `docs/`, `CHANGELOG.md`, arquitectura, reglas de arquitectura, principios de diseño, roadmap, requerimientos, modelo de dominio, API de operaciones, JSON schema y estrategia de pruebas cuando exista.
 
-2. **Nunca proponer Node como requisito.**
-   NodeJS no debe ser necesario para usar, ejecutar o abrir la aplicación.
+2. **Nunca modificar código sin entender el proyecto.**
+   Antes de editar, entender el estado actual, la visión, las restricciones offline y la regla de `index.html`.
 
-3. **Nunca proponer npm, pnpm o yarn como requisito.**
-   El usuario no debe instalar paquetes para usar la app básica.
+3. **Nunca romper compatibilidad.**
+   Si un cambio puede romper comportamiento existente, detenerse y pedir aprobación.
 
-4. **Nunca proponer un backend obligatorio.**
-   La aplicación debe seguir siendo local, offline y sin servidor.
+4. **Nunca eliminar funcionalidades.**
+   Extender siempre es preferible a reemplazar. Eliminar requiere aprobación explícita.
 
-5. **Nunca romper el funcionamiento desde `index.html`.**
-   Si el usuario no puede abrir `index.html` y trabajar, la propuesta viola la arquitectura.
+5. **Nunca modificar el comportamiento existente sin aprobación.**
+   Esto incluye G-code, UI, validaciones, defaults, descargas, simulación, postprocesadores y almacenamiento.
 
-6. **Nunca convertir el proyecto en una SPA dependiente de herramientas externas.**
-   Puede ser modular e interactivo, pero no debe depender de bundlers, builds o toolchains.
+6. **Siempre explicar los cambios.**
+   Describir qué se hará, por qué se hará y qué comportamiento se espera.
 
-7. **Siempre mantener compatibilidad offline.**
-   No usar CDNs, APIs remotas, fuentes remotas o servicios externos para funciones básicas.
+7. **Siempre indicar los archivos afectados.**
+   Antes de implementar, listar los archivos que cambiarán.
 
-8. **Siempre mantener ES Modules.**
-   Usar `import` y `export` nativos. No usar CommonJS ni `require()`.
+8. **Siempre indicar riesgos.**
+   Incluir riesgos de compatibilidad, regresión, salida G-code, usabilidad, performance y mantenimiento.
 
-9. **Siempre mantener JavaScript puro.**
-   Preferir APIs nativas del navegador antes que paquetes externos.
+9. **Siempre proponer primero. Implementar después.**
+   Para cambios funcionales o arquitectónicos, presentar análisis, plan, riesgos y alternativas antes de escribir código.
 
-10. **Siempre justificar cualquier dependencia nueva.**
+10. **Siempre mantener el proyecto compatible con `index.html`.**
+    Si el usuario no puede abrir `index.html` y trabajar, la propuesta viola la arquitectura.
+
+11. **Nunca convertir este proyecto en una aplicación dependiente de herramientas externas.**
+    No proponer frameworks, Node, backend, bundlers, transpiladores ni servidores obligatorios para la app básica.
+
+12. **Siempre mantener compatibilidad offline.**
+    No usar CDNs, APIs remotas, fuentes remotas o servicios externos para funciones básicas.
+
+13. **Siempre mantener ES Modules.**
+    Usar `import` y `export` nativos. No usar CommonJS ni `require()`.
+
+14. **Siempre mantener JavaScript puro.**
+    Preferir APIs nativas del navegador antes que paquetes externos.
+
+15. **Siempre justificar cualquier dependencia nueva.**
     Si se propone una dependencia, explicar por qué es imprescindible, qué riesgo introduce, cuánto pesa y cómo mantiene funcionamiento local.
 
-11. **Siempre preferir módulos pequeños.**
-    No resolver crecimiento agregando más lógica a un archivo gigante.
-
-12. **Siempre proteger compatibilidad de navegador.**
-    Considerar Chrome, Edge, Firefox y Safari antes de usar una API.
-
-13. **Siempre proteger la simplicidad del usuario.**
+16. **Siempre proteger la simplicidad del usuario.**
     Ninguna decisión técnica debe hacer más difícil abrir la app y trabajar.
-
-14. **Siempre proponer antes de implementar cambios arquitectónicos.**
-    Los cambios que afecten estructura, carga de módulos, dependencias o ejecución deben aprobarse antes de implementarse.
 
 ## Criterio final
 
