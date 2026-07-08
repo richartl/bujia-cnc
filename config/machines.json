@@ -1,0 +1,26 @@
+[
+  {
+    "id": "generic_grbl_router",
+    "name": "Router CNC GRBL genérico",
+    "controllerType": "grbl",
+    "workArea": { "x": 400, "y": 300, "z": 60, "units": "mm" },
+    "defaultSafeZ": 5,
+    "maxFeedRate": 1200,
+    "maxPlungeRate": 300,
+    "spindle": { "minRpm": 0, "maxRpm": 12000 },
+    "supportedPostProcessors": ["grbl"],
+    "notes": "Perfil conservador para routers CNC GRBL pequeños o medianos."
+  },
+  {
+    "id": "desktop_3018_grbl",
+    "name": "CNC 3018 GRBL",
+    "controllerType": "grbl",
+    "workArea": { "x": 300, "y": 180, "z": 45, "units": "mm" },
+    "defaultSafeZ": 5,
+    "maxFeedRate": 900,
+    "maxPlungeRate": 180,
+    "spindle": { "minRpm": 0, "maxRpm": 10000 },
+    "supportedPostProcessors": ["grbl"],
+    "notes": "Perfil conservador para máquinas 3018."
+  }
+]

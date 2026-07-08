@@ -16,6 +16,10 @@
     button.secondary { background: #333; color: #eee; border: 1px solid #555; }
     textarea { width: 100%; height: 420px; margin-top: 16px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #050505; color: #d8ffd8; padding: 12px; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.35; }
     .suggestion { margin-top: 8px; color: #9ee493; font-size: 14px; }
+    .panel { background: #1a1a1a; border: 1px solid #333; padding: 12px; border-radius: 8px; margin: 12px 0 20px; }
+    .panel h2 { font-size: 18px; margin: 0 0 10px; }
+    .recommendations { color: #d8ffd8; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+    .status { color: #ffd27d; font-size: 13px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -24,6 +28,17 @@
     Genera un recorrido zig-zag para desbastar/planear una superficie.
     Usa <b>G21</b> milímetros, <b>G90</b> absoluto al inicio y <b>G91</b> relativo para el patrón.
     Prueba primero con el spindle apagado y Z arriba de la madera.
+  </div>
+
+  <div class="panel" id="libraryPanel">
+    <h2>Biblioteca y recomendaciones</h2>
+    <div class="grid">
+      <label><span>Herramienta</span><select id="toolSelect"><option value="">Cargando herramientas...</option></select></label>
+      <label><span>Material</span><select id="materialSelect"><option value="">Cargando materiales...</option></select></label>
+      <label><span>Máquina</span><select id="machineSelect"><option value="">Cargando máquinas...</option></select></label>
+    </div>
+    <div id="libraryStatus" class="status"></div>
+    <div id="recommendationsOutput" class="recommendations"></div>
   </div>
 
   <div class="grid">
@@ -182,6 +197,143 @@ document.getElementById("toolDia").addEventListener("input", updateSuggestion);
 document.getElementById("toolDia").addEventListener("change", updateSuggestion);
 updateSuggestion();
 generateGcode();
+</script>
+<script>
+(function initLibraryAndRecommendations() {
+  const toolSelect = document.getElementById("toolSelect");
+  const materialSelect = document.getElementById("materialSelect");
+  const machineSelect = document.getElementById("machineSelect");
+  const statusEl = document.getElementById("libraryStatus");
+  const recommendationsEl = document.getElementById("recommendationsOutput");
+
+  function formatRecommendationValue(value, suffix) {
+    if (value === null || value === undefined) return "No disponible";
+    return Number(value).toString() + (suffix || "");
+  }
+
+  function populateSelect(select, items, selectedId, emptyLabel) {
+    select.innerHTML = "";
+
+    if (!items.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = emptyLabel;
+      select.appendChild(option);
+      select.disabled = true;
+      return;
+    }
+
+    items.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = item.name;
+      select.appendChild(option);
+    });
+
+    select.disabled = false;
+    select.value = selectedId && items.some((item) => item.id === selectedId) ? selectedId : items[0].id;
+  }
+
+  function readCurrentOperation() {
+    return {
+      type: "surfacing",
+      parameters: {
+        widthX: num("distX"),
+        lengthY: num("distY"),
+        zPasses: num("zPasses"),
+        totalDepthZ: num("totalZ"),
+        feedRate: num("feedRate"),
+        plungeRate: num("plungeRate"),
+        stepover: num("stepX"),
+        spindleRpm: num("spindle"),
+        safeZ: num("safeZ"),
+        startDirection: document.getElementById("startDirection").value,
+      },
+    };
+  }
+
+  function renderRecommendation(recommendation) {
+    const warnings = recommendation.warnings.length
+      ? recommendation.warnings.map((warning) => "- " + warning.message).join("\n")
+      : "Sin advertencias.";
+
+    recommendationsEl.textContent = [
+      "RPM: " + formatRecommendationValue(recommendation.recommendedRPM),
+      "Feed XY: " + formatRecommendationValue(recommendation.recommendedFeed, " mm/min"),
+      "Plunge Z: " + formatRecommendationValue(recommendation.recommendedPlunge, " mm/min"),
+      "Profundidad por pasada: " + formatRecommendationValue(recommendation.recommendedDepthPerPass, " mm"),
+      "Stepover: " + formatRecommendationValue(recommendation.recommendedStepover, " mm"),
+      "Stepover %: " + formatRecommendationValue(recommendation.recommendedStepoverPercent, "%"),
+      "Pasadas recomendadas: " + formatRecommendationValue(recommendation.recommendedPasses),
+      "Confianza: " + recommendation.confidence,
+      "",
+      "Advertencias:",
+      warnings,
+      "",
+      "Explicación:",
+      recommendation.explanation.map((line) => "- " + line).join("\n"),
+    ].join("\n");
+  }
+
+  function showLibraryUnavailable(message) {
+    statusEl.textContent = message;
+    recommendationsEl.textContent = "La biblioteca no está disponible. El generador actual sigue funcionando sin cambios.";
+    populateSelect(toolSelect, [], "", "Herramientas no disponibles");
+    populateSelect(materialSelect, [], "", "Materiales no disponibles");
+    populateSelect(machineSelect, [], "", "Máquinas no disponibles");
+  }
+
+  Promise.all([
+    import("./core/library/library.js"),
+    import("./core/recommendations/recommendations.js"),
+  ]).then(([libraryModule, recommendationsModule]) => {
+    let currentLibrary;
+
+    function updateRecommendation() {
+      currentLibrary = libraryModule.updateSelection(currentLibrary, {
+        toolId: toolSelect.value,
+        materialId: materialSelect.value,
+        machineId: machineSelect.value,
+      });
+
+      const context = libraryModule.getSelectedContext(currentLibrary);
+      const recommendation = recommendationsModule.getRecommendations({
+        tool: context.tool,
+        material: context.material,
+        machine: context.machine,
+        operation: readCurrentOperation(),
+      });
+
+      renderRecommendation(recommendation);
+    }
+
+    libraryModule.loadLibrary().then((library) => {
+      currentLibrary = library;
+
+      if (library.loadError) {
+        showLibraryUnavailable("No se pudieron cargar los JSON de config/. Algunos navegadores bloquean fetch() desde file://. Detalle: " + library.loadError);
+        return;
+      }
+
+      populateSelect(toolSelect, library.tools, library.selected.toolId, "Sin herramientas");
+      populateSelect(materialSelect, library.materials, library.selected.materialId, "Sin materiales");
+      populateSelect(machineSelect, library.machines, library.selected.machineId, "Sin máquinas");
+
+      statusEl.textContent = "Biblioteca cargada desde config/*.json. Las preferencias se guardan en LocalStorage.";
+
+      toolSelect.addEventListener("change", updateRecommendation);
+      materialSelect.addEventListener("change", updateRecommendation);
+      machineSelect.addEventListener("change", updateRecommendation);
+      ["distX", "distY", "zPasses", "totalZ", "feedRate", "plungeRate", "stepX", "spindle", "safeZ"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", updateRecommendation);
+      });
+
+      updateRecommendation();
+    });
+  }).catch((error) => {
+    showLibraryUnavailable("No se pudieron inicializar módulos de biblioteca/recomendaciones. Detalle: " + error.message);
+  });
+})();
 </script>
 </body>
 </html>

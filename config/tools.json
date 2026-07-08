@@ -1,0 +1,44 @@
+[
+  {
+    "id": "flat_13mm_2f_carbide",
+    "name": "Fresa plana 13 mm 2F carburo",
+    "diameter": 13,
+    "type": "flat_endmill",
+    "usableLength": 25,
+    "flutes": 2,
+    "material": "carbide",
+    "recommendedRpm": 10000,
+    "recommendedFeed": 800,
+    "recommendedPlunge": 120,
+    "recommendedStepover": 5.2,
+    "notes": "Herramienta conservadora para surfacing en madera."
+  },
+  {
+    "id": "flat_6mm_2f_carbide",
+    "name": "Fresa plana 6 mm 2F carburo",
+    "diameter": 6,
+    "type": "flat_endmill",
+    "usableLength": 18,
+    "flutes": 2,
+    "material": "carbide",
+    "recommendedRpm": 12000,
+    "recommendedFeed": 650,
+    "recommendedPlunge": 90,
+    "recommendedStepover": 2.4,
+    "notes": "Fresa versátil para madera y cavidades pequeñas."
+  },
+  {
+    "id": "ball_6mm_2f_carbide",
+    "name": "Fresa bola 6 mm 2F carburo",
+    "diameter": 6,
+    "type": "ball_endmill",
+    "usableLength": 18,
+    "flutes": 2,
+    "material": "carbide",
+    "recommendedRpm": 12000,
+    "recommendedFeed": 500,
+    "recommendedPlunge": 70,
+    "recommendedStepover": 1.8,
+    "notes": "Útil para radios y acabados suaves."
+  }
+]
