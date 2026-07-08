@@ -1,406 +1,45 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Generador G-code Surfacing CNC</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; background: #111; color: #eee; }
-    h1 { margin-bottom: 8px; }
-    .note { background: #1f1f1f; border: 1px solid #333; padding: 12px; border-radius: 8px; margin: 12px 0 20px; line-height: 1.45; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    label { display: block; background: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 8px; }
-    label span { display: block; font-size: 13px; color: #bbb; margin-bottom: 6px; }
-    input, select { width: 100%; box-sizing: border-box; padding: 9px; border-radius: 6px; border: 1px solid #444; background: #080808; color: #eee; font-size: 15px; }
-    button { margin-top: 14px; margin-right: 8px; padding: 11px 16px; border: 0; border-radius: 7px; cursor: pointer; font-weight: bold; background: #e8e8e8; color: #111; }
-    button.secondary { background: #333; color: #eee; border: 1px solid #555; }
-    textarea { width: 100%; height: 420px; margin-top: 16px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #050505; color: #d8ffd8; padding: 12px; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.35; }
-    .suggestion { margin-top: 8px; color: #9ee493; font-size: 14px; }
-    .panel { background: #1a1a1a; border: 1px solid #333; padding: 12px; border-radius: 8px; margin: 12px 0 20px; }
-    .panel h2 { font-size: 18px; margin: 0 0 10px; }
-    .recommendations { color: #d8ffd8; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
-    .status { color: #ffd27d; font-size: 13px; margin-top: 8px; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC Toolbox</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-  <h1>Generador G-code Surfacing CNC</h1>
-  <div class="note">
-    Genera un recorrido zig-zag para desbastar/planear una superficie.
-    Usa <b>G21</b> milímetros, <b>G90</b> absoluto al inicio y <b>G91</b> relativo para el patrón.
-    Prueba primero con el spindle apagado y Z arriba de la madera.
-  </div>
+  <main>
+    <header class="card">
+      <h1>Bujia CNC Toolbox</h1>
+      <p class="muted">Caja de herramientas CNC offline. Elige una operación, llena pocos datos y descarga G-code.</p>
+    </header>
 
-  <div class="panel" id="libraryPanel">
-    <h2>Biblioteca y recomendaciones</h2>
-    <div class="grid">
-      <label><span>Herramienta</span><select id="toolSelect"><option value="">Cargando herramientas...</option></select></label>
-      <label><span>Material</span><select id="materialSelect"><option value="">Cargando materiales...</option></select></label>
-      <label><span>Máquina</span><select id="machineSelect"><option value="">Cargando máquinas...</option></select></label>
-      <label><span>Estrategia de recorrido</span><select id="toolpathStrategySelect"><option value="zigzag">ZigZag</option></select></label>
-    </div>
-    <div id="libraryStatus" class="status"></div>
-    <div id="recommendationsOutput" class="recommendations"></div>
-  </div>
-
-  <div class="grid">
-    <label><span>Distancia total en X / ancho a cubrir (mm)</span><input id="distX" type="number" value="410" step="0.1"></label>
-    <label><span>Distancia en Y / largo de cada pasada (mm)</span><input id="distY" type="number" value="210" step="0.1"></label>
-    <label><span>Número de pasadas de profundidad Z</span><input id="zPasses" type="number" value="1" min="1" step="1"></label>
-    <label><span>Profundidad total en Z a recorrer (mm)</span><input id="totalZ" type="number" value="0.7" min="0" step="0.1"></label>
-    <label><span>Feedrate de corte XY (mm/min)</span><input id="feedRate" type="number" value="600" step="1"></label>
-    <label><span>Feedrate de bajada Z (mm/min)</span><input id="plungeRate" type="number" value="100" step="1"></label>
-    <label><span>Distancia que avanza X en cada pasada / stepover (mm)</span><input id="stepX" type="number" value="3" step="0.1"><div id="stepSuggestion" class="suggestion"></div></label>
-    <label><span>Diámetro de fresa (mm)</span><input id="toolDia" type="number" value="13" step="0.1"></label>
-    <label><span>RPM / S del spindle</span><input id="spindle" type="number" value="1000" step="1"></label>
-    <label><span>Z seguro para movimientos rápidos (mm)</span><input id="safeZ" type="number" value="5" step="0.1"></label>
-    <label><span>Nombre del archivo</span><input id="fileName" type="text" value="surfacing.nc"></label>
-    <label><span>Dirección inicial</span><select id="startDirection"><option value="positive">Primero Y positivo</option><option value="negative">Primero Y negativo</option></select></label>
-  </div>
-
-  <button onclick="generateGcode()">Generar G-code</button>
-  <button class="secondary" onclick="downloadGcode()">Descargar .nc</button>
-  <button class="secondary" onclick="copyGcode()">Copiar</button>
-
-  <textarea id="output" spellcheck="false"></textarea>
-
-<script>
-function num(id) { return Number(document.getElementById(id).value); }
-function clean(n) { return Number(Number(n).toFixed(4)).toString(); }
-
-function updateSuggestion() {
-  const dia = num("toolDia");
-  const el = document.getElementById("stepSuggestion");
-  if (!dia || dia <= 0) { el.textContent = ""; return; }
-  const low = dia * 0.30, mid = dia * 0.40, high = dia * 0.50;
-  el.innerHTML = "Sugerencia: " + clean(low) + " a " + clean(high) + " mm. Conservador: " + clean(mid) + " mm.";
-}
-
-function renderToolpathEvent(event) {
-  if (event.type === "blank") return "";
-  if (event.type === "comment") return "( " + event.text + " )";
-  if (event.type === "absoluteMode") return "G90";
-  if (event.type === "relativeMode") return "G91";
-  if (event.type === "feedRate") return "F" + clean(event.value);
-
-  if (event.type === "rapid" || event.type === "linear") {
-    const parts = [event.type === "rapid" ? "G0" : "G1"];
-    if (event.x !== undefined) parts.push("X" + clean(event.x));
-    if (event.y !== undefined) parts.push("Y" + clean(event.y));
-    if (event.z !== undefined) parts.push("Z" + clean(event.z));
-    if (event.feed !== undefined) parts.push("F" + clean(event.feed));
-    return parts.join(" ");
-  }
-
-  return "( ADVERTENCIA: evento Toolpath no soportado: " + event.type + " )";
-}
-
-function renderToolpathLines(toolpath) {
-  return toolpath.events.map(renderToolpathEvent);
-}
-
-function generateLegacyZigZagToolpathLines(parameters) {
-  const zIncrement = parameters.totalZ / parameters.zPasses;
-  let lines = [];
-
-  for (let zp = 1; zp <= parameters.zPasses; zp++) {
-    const depth = zIncrement * zp;
-
-    lines.push("( ============================== )");
-    lines.push("( PASADA Z " + zp + " DE " + parameters.zPasses + " - Z-" + clean(depth) + " )");
-    lines.push("( ============================== )");
-    lines.push("G90");
-    lines.push("G0 X0 Y0");
-    lines.push("G1 Z-" + clean(depth) + " F" + clean(parameters.plungeRate));
-    lines.push("G91");
-    lines.push("F" + clean(parameters.feedRate));
-    lines.push("");
-
-    let coveredX = 0;
-    let pass = 1;
-    let dirY = parameters.startDirection === "positive" ? parameters.distY : -parameters.distY;
-
-    while (coveredX < parameters.distX) {
-      const remainingX = parameters.distX - coveredX;
-      const moveX = Math.min(parameters.stepX, remainingX);
-
-      lines.push("( Z" + zp + " / PASADA XY " + pass + " )");
-      lines.push("G1 Y" + clean(dirY));
-      if (moveX > 0) lines.push("G1 X" + clean(moveX));
-      lines.push("");
-
-      coveredX += moveX;
-      dirY = -dirY;
-      pass++;
-    }
-
-    lines.push("G90");
-    lines.push("G0 Z" + clean(parameters.safeZ));
-    lines.push("");
-  }
-
-  return lines;
-}
-
-function generateGcode() {
-  const distX = num("distX");
-  const distY = num("distY");
-  const zPasses = Math.max(1, Math.floor(num("zPasses")));
-  const totalZ = num("totalZ");
-  const feedRate = num("feedRate");
-  const plungeRate = num("plungeRate");
-  const stepX = num("stepX");
-  const toolDia = num("toolDia");
-  const spindle = num("spindle");
-  const safeZ = num("safeZ");
-  const startDirection = document.getElementById("startDirection").value;
-
-  let warnings = [];
-  if (distX <= 0 || distY <= 0) warnings.push("ERROR: X y Y deben ser mayores a 0.");
-  if (stepX <= 0) warnings.push("ERROR: El paso en X debe ser mayor a 0.");
-  if (totalZ <= 0) warnings.push("ERROR: La profundidad Z debe ser mayor a 0.");
-  if (feedRate <= 0 || plungeRate <= 0) warnings.push("ERROR: Los feedrates deben ser mayores a 0.");
-  if (toolDia > 0 && stepX > toolDia) warnings.push("ADVERTENCIA: El paso en X es mayor al diámetro de la fresa.");
-
-  if (warnings.some(w => w.startsWith("ERROR"))) {
-    document.getElementById("output").value = warnings.join("\n");
-    return;
-  }
-
-  const toolpathParameters = {
-    distX,
-    distY,
-    zPasses,
-    totalZ,
-    feedRate,
-    plungeRate,
-    stepX,
-    toolDia,
-    spindle,
-    safeZ,
-    startDirection,
-    clean,
-  };
-  const selectedStrategyId = document.getElementById("toolpathStrategySelect")
-    ? document.getElementById("toolpathStrategySelect").value
-    : "zigzag";
-  let lines = [];
-
-  lines.push("%");
-  lines.push("( Surfacing generado en navegador )");
-  lines.push("( Area X: " + clean(distX) + " mm, Y: " + clean(distY) + " mm )");
-  lines.push("( Pasadas Z: " + zPasses + ", profundidad total: Z-" + clean(totalZ) + " mm )");
-  lines.push("( Step X: " + clean(stepX) + " mm, Feed XY: F" + clean(feedRate) + " )");
-  lines.push("");
-
-  warnings.forEach(w => lines.push("( " + w + " )"));
-  if (warnings.length) lines.push("");
-
-  lines.push("G21");
-  lines.push("G90");
-  lines.push("G94");
-  lines.push("");
-  lines.push("M3 S" + clean(spindle));
-  lines.push("G4 P3");
-  lines.push("");
-  lines.push("G0 Z" + clean(safeZ));
-  lines.push("G0 X0 Y0");
-  lines.push("");
-
-  const toolpath = window.bujiaToolpaths && window.bujiaToolpaths.generateToolpath
-    ? window.bujiaToolpaths.generateToolpath(selectedStrategyId, toolpathParameters)
-    : null;
-  const toolpathLines = toolpath
-    ? renderToolpathLines(toolpath)
-    : generateLegacyZigZagToolpathLines(toolpathParameters);
-  toolpathLines.forEach(line => lines.push(line));
-
-  lines.push("G90");
-  lines.push("G0 Z" + clean(safeZ));
-  lines.push("G0 X0 Y0");
-  lines.push("M5");
-  lines.push("M30");
-  lines.push("%");
-
-  document.getElementById("output").value = lines.join("\n");
-}
-
-function downloadGcode() {
-  if (!document.getElementById("output").value.trim()) generateGcode();
-
-  let fileName = document.getElementById("fileName").value.trim() || "surfacing.nc";
-  if (!fileName.match(/\.(nc|gcode|tap)$/i)) fileName += ".nc";
-
-  const blob = new Blob([document.getElementById("output").value], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-function copyGcode() {
-  if (!document.getElementById("output").value.trim()) generateGcode();
-  navigator.clipboard.writeText(document.getElementById("output").value)
-    .then(() => alert("G-code copiado."))
-    .catch(() => alert("No se pudo copiar automáticamente."));
-}
-
-document.getElementById("toolDia").addEventListener("input", updateSuggestion);
-document.getElementById("toolDia").addEventListener("change", updateSuggestion);
-updateSuggestion();
-generateGcode();
-</script>
-<script>
-(function initLibraryAndRecommendations() {
-  const toolSelect = document.getElementById("toolSelect");
-  const materialSelect = document.getElementById("materialSelect");
-  const machineSelect = document.getElementById("machineSelect");
-  const statusEl = document.getElementById("libraryStatus");
-  const recommendationsEl = document.getElementById("recommendationsOutput");
-
-  function formatRecommendationValue(value, suffix) {
-    if (value === null || value === undefined) return "No disponible";
-    return Number(value).toString() + (suffix || "");
-  }
-
-  function populateSelect(select, items, selectedId, emptyLabel) {
-    select.innerHTML = "";
-
-    if (!items.length) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = emptyLabel;
-      select.appendChild(option);
-      select.disabled = true;
-      return;
-    }
-
-    items.forEach((item) => {
-      const option = document.createElement("option");
-      option.value = item.id;
-      option.textContent = item.name;
-      select.appendChild(option);
-    });
-
-    select.disabled = false;
-    select.value = selectedId && items.some((item) => item.id === selectedId) ? selectedId : items[0].id;
-  }
-
-  function readCurrentOperation() {
-    return {
-      type: "surfacing",
-      parameters: {
-        widthX: num("distX"),
-        lengthY: num("distY"),
-        zPasses: num("zPasses"),
-        totalDepthZ: num("totalZ"),
-        feedRate: num("feedRate"),
-        plungeRate: num("plungeRate"),
-        stepover: num("stepX"),
-        spindleRpm: num("spindle"),
-        safeZ: num("safeZ"),
-        startDirection: document.getElementById("startDirection").value,
-      },
-    };
-  }
-
-  function renderRecommendation(recommendation) {
-    const warnings = recommendation.warnings.length
-      ? recommendation.warnings.map((warning) => "- " + warning.message).join("\n")
-      : "Sin advertencias.";
-
-    recommendationsEl.textContent = [
-      "RPM: " + formatRecommendationValue(recommendation.recommendedRPM),
-      "Feed XY: " + formatRecommendationValue(recommendation.recommendedFeed, " mm/min"),
-      "Plunge Z: " + formatRecommendationValue(recommendation.recommendedPlunge, " mm/min"),
-      "Profundidad por pasada: " + formatRecommendationValue(recommendation.recommendedDepthPerPass, " mm"),
-      "Stepover: " + formatRecommendationValue(recommendation.recommendedStepover, " mm"),
-      "Stepover %: " + formatRecommendationValue(recommendation.recommendedStepoverPercent, "%"),
-      "Pasadas recomendadas: " + formatRecommendationValue(recommendation.recommendedPasses),
-      "Confianza: " + recommendation.confidence,
-      "",
-      "Advertencias:",
-      warnings,
-      "",
-      "Explicación:",
-      recommendation.explanation.map((line) => "- " + line).join("\n"),
-    ].join("\n");
-  }
-
-  function showLibraryUnavailable(message) {
-    statusEl.textContent = message;
-    recommendationsEl.textContent = "La biblioteca no está disponible. El generador actual sigue funcionando sin cambios.";
-    populateSelect(toolSelect, [], "", "Herramientas no disponibles");
-    populateSelect(materialSelect, [], "", "Materiales no disponibles");
-    populateSelect(machineSelect, [], "", "Máquinas no disponibles");
-  }
-
-  Promise.all([
-    import("./core/library/library.js"),
-    import("./core/recommendations/recommendations.js"),
-    import("./toolpaths/index.js"),
-  ]).then(([libraryModule, recommendationsModule, toolpathModule]) => {
-    window.bujiaToolpaths = toolpathModule;
-    const strategySelect = document.getElementById("toolpathStrategySelect");
-    strategySelect.innerHTML = "";
-    toolpathModule.getStrategies().forEach((strategy) => {
-      const option = document.createElement("option");
-      option.value = strategy.id;
-      option.textContent = strategy.name;
-      strategySelect.appendChild(option);
-    });
-    strategySelect.value = toolpathModule.DEFAULT_STRATEGY_ID;
-    let currentLibrary;
-
-    function updateRecommendation() {
-      currentLibrary = libraryModule.updateSelection(currentLibrary, {
-        toolId: toolSelect.value,
-        materialId: materialSelect.value,
-        machineId: machineSelect.value,
-      });
-
-      const context = libraryModule.getSelectedContext(currentLibrary);
-      const recommendation = recommendationsModule.getRecommendations({
-        tool: context.tool,
-        material: context.material,
-        machine: context.machine,
-        operation: readCurrentOperation(),
-      });
-
-      renderRecommendation(recommendation);
-    }
-
-    libraryModule.loadLibrary().then((library) => {
-      currentLibrary = library;
-
-      if (library.loadError) {
-        showLibraryUnavailable("No se pudieron cargar los JSON de config/. Algunos navegadores bloquean fetch() desde file://. Detalle: " + library.loadError);
-        return;
-      }
-
-      populateSelect(toolSelect, library.tools, library.selected.toolId, "Sin herramientas");
-      populateSelect(materialSelect, library.materials, library.selected.materialId, "Sin materiales");
-      populateSelect(machineSelect, library.machines, library.selected.machineId, "Sin máquinas");
-
-      statusEl.textContent = "Biblioteca cargada desde config/*.json. Las preferencias se guardan en LocalStorage.";
-
-      toolSelect.addEventListener("change", updateRecommendation);
-      materialSelect.addEventListener("change", updateRecommendation);
-      machineSelect.addEventListener("change", updateRecommendation);
-      document.getElementById("toolpathStrategySelect").addEventListener("change", updateRecommendation);
-      ["distX", "distY", "zPasses", "totalZ", "feedRate", "plungeRate", "stepX", "spindle", "safeZ"].forEach((id) => {
-        document.getElementById(id).addEventListener("input", updateRecommendation);
-      });
-
-      updateRecommendation();
-    });
-  }).catch((error) => {
-    showLibraryUnavailable("No se pudieron inicializar módulos de biblioteca/recomendaciones. Detalle: " + error.message);
-  });
-})();
-</script>
+    <section aria-label="Herramientas" class="tool-grid">
+      <a class="tool-link" href="pages/surfacing.html">
+        <strong>Surfacing</strong>
+        Aplanado de superficies.
+      </a>
+      <a class="tool-link" href="pages/edge.html">
+        <strong>Cantos</strong>
+        Próximamente.
+      </a>
+      <a class="tool-link" href="pages/slots.html">
+        <strong>Ranuras</strong>
+        Próximamente.
+      </a>
+      <a class="tool-link" href="pages/drilling.html">
+        <strong>Taladros</strong>
+        Próximamente.
+      </a>
+      <a class="tool-link" href="pages/pockets.html">
+        <strong>Cavidades</strong>
+        Próximamente.
+      </a>
+      <a class="tool-link" href="pages/settings.html">
+        <strong>Settings</strong>
+        Preferencias futuras.
+      </a>
+    </section>
+  </main>
 </body>
 </html>

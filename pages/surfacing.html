@@ -12,29 +12,110 @@
     <p><a href="../index.html">← Volver al inicio</a></p>
     <section class="card">
       <h1>Surfacing</h1>
-      <p class="muted">Formulario futuro para aplanado de superficies. El generador funcional actual permanece en index.html hasta una migración aprobada.</p>
+      <p class="muted">Genera un recorrido zig-zag para desbastar/planear una superficie. Prueba primero con el spindle apagado y Z arriba de la madera.</p>
+
       <form class="tool-form" aria-label="Formulario Surfacing">
         <div class="form-field">
-          <label for="widthX">Ancho X (mm)</label>
-          <input id="widthX" name="widthX" type="number" placeholder="Pendiente de implementación">
+          <label for="strategy">Estrategia</label>
+          <select id="strategy" name="strategy">
+            <option value="zigzag">Zig Zag</option>
+            <option value="oneway">One Way</option>
+            <option value="rasterx">Raster X</option>
+            <option value="rastery">Raster Y</option>
+          </select>
+          <div id="strategyStatus" class="muted"></div>
         </div>
+
         <div class="form-field">
-          <label for="lengthY">Largo Y (mm)</label>
-          <input id="lengthY" name="lengthY" type="number" placeholder="Pendiente de implementación">
+          <label for="smartSurfacing">Smart Surfacing</label>
+          <select id="smartSurfacing" name="smartSurfacing">
+            <option value="off">OFF</option>
+            <option value="conservative">Conservative</option>
+            <option value="balanced">Balanced</option>
+            <option value="aggressive">Aggressive</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="muted">Interfaz preparada. Todavía no modifica los cálculos.</div>
         </div>
+
         <div class="form-field">
-          <label for="totalDepth">Profundidad total Z (mm)</label>
-          <input id="totalDepth" name="totalDepth" type="number" placeholder="Pendiente de implementación">
+          <label for="distX">Distancia total en X / ancho a cubrir (mm)</label>
+          <input id="distX" type="number" value="410" step="0.1">
         </div>
+
         <div class="form-field">
-          <label for="safeZ">Z seguro (mm)</label>
-          <input id="safeZ" name="safeZ" type="number" placeholder="Pendiente de implementación">
+          <label for="distY">Distancia en Y / largo de cada pasada (mm)</label>
+          <input id="distY" type="number" value="210" step="0.1">
         </div>
+
+        <div class="form-field">
+          <label for="zPasses">Número de pasadas de profundidad Z</label>
+          <input id="zPasses" type="number" value="1" min="1" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="totalZ">Profundidad total en Z a recorrer (mm)</label>
+          <input id="totalZ" type="number" value="0.7" min="0" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="feedRate">Feedrate de corte XY (mm/min)</label>
+          <input id="feedRate" type="number" value="600" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="plungeRate">Feedrate de bajada Z (mm/min)</label>
+          <input id="plungeRate" type="number" value="100" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="stepX">Distancia que avanza X en cada pasada / stepover (mm)</label>
+          <input id="stepX" type="number" value="3" step="0.1">
+          <div id="stepSuggestion" class="muted"></div>
+        </div>
+
+        <div class="form-field">
+          <label for="toolDia">Diámetro de fresa (mm)</label>
+          <input id="toolDia" type="number" value="13" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="spindle">RPM / S del spindle</label>
+          <input id="spindle" type="number" value="1000" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="safeZ">Z seguro para movimientos rápidos (mm)</label>
+          <input id="safeZ" type="number" value="5" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="fileName">Nombre del archivo</label>
+          <input id="fileName" type="text" value="surfacing.nc">
+        </div>
+
+        <div class="form-field">
+          <label for="startDirection">Dirección inicial</label>
+          <select id="startDirection">
+            <option value="positive">Primero Y positivo</option>
+            <option value="negative">Primero Y negativo</option>
+          </select>
+        </div>
+
         <div class="form-actions">
-          <button type="button" disabled>Generar próximamente</button>
+          <button id="generateButton" type="button">Generar G-code</button>
+          <button id="downloadButton" type="button">Descargar .nc</button>
+          <button id="copyButton" type="button">Copiar</button>
         </div>
       </form>
+
+      <label class="form-field" for="output">
+        <span>Vista previa</span>
+        <textarea id="output" spellcheck="false" rows="22"></textarea>
+      </label>
     </section>
   </main>
+  <script src="../js/gcode/surfacing.js"></script>
+  <script src="../js/ui/surfacing-ui.js"></script>
 </body>
 </html>
