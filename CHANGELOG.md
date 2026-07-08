@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Creada la estructura base de carpetas y archivos para futuras páginas independientes (`pages/`, `css/`, `gcode/`, `ui/`) sin migrar código ni modificar el generador actual.
 - Replanteada la visión del proyecto: de CAM ligero a caja de herramientas CNC offline.
 - Simplificada la arquitectura documental hacia `index.html` como menú principal y páginas independientes bajo `pages/`.
 - Eliminados de la arquitectura objetivo los conceptos globales obligatorios de Machine Library, Material Library y Recommendation Engine.
