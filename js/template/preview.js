@@ -103,15 +103,63 @@
     ctx.fill();
 
     // Cotas
-    ctx.fillStyle = colText;
+    const colDim = styles.getPropertyValue("--color-faint").trim() || "#6b7785";
+    function fmt(value) { return (Math.round(value * 100) / 100) + " mm"; }
+
+    function fmtNum(value) { return String(Math.round(value * 100) / 100); }
+
     ctx.font = "12px system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(scene.dims.width + " mm", cx, ty(scene.guides.halfH) - 10);
+    ctx.textBaseline = "alphabetic";
+
+    const bb = scene.bbox;
+
+    // Cota de ancho de la pieza (arriba)
+    const topY = ty(bb.maxY) - 14;
+    ctx.strokeStyle = colDim;
+    ctx.fillStyle = colDim;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(tx(bb.minX), topY);
+    ctx.lineTo(tx(bb.maxX), topY);
+    ctx.moveTo(tx(bb.minX), topY - 4); ctx.lineTo(tx(bb.minX), topY + 4);
+    ctx.moveTo(tx(bb.maxX), topY - 4); ctx.lineTo(tx(bb.maxX), topY + 4);
+    ctx.stroke();
+    ctx.fillStyle = colText;
+    ctx.fillText(fmt(bb.maxX - bb.minX), cx, topY - 5);
+
+    // Cota de alto de la pieza (izquierda)
+    const leftX = tx(bb.minX) - 14;
+    ctx.strokeStyle = colDim;
+    ctx.fillStyle = colDim;
+    ctx.beginPath();
+    ctx.moveTo(leftX, ty(bb.minY));
+    ctx.lineTo(leftX, ty(bb.maxY));
+    ctx.moveTo(leftX - 4, ty(bb.minY)); ctx.lineTo(leftX + 4, ty(bb.minY));
+    ctx.moveTo(leftX - 4, ty(bb.maxY)); ctx.lineTo(leftX + 4, ty(bb.maxY));
+    ctx.stroke();
     ctx.save();
-    ctx.translate(tx(-scene.guides.halfW) - 12, cy);
+    ctx.translate(leftX - 5, cy);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillText(scene.dims.height + " mm", 0, 0);
+    ctx.fillStyle = colText;
+    ctx.fillText(fmt(bb.maxY - bb.minY), 0, 0);
     ctx.restore();
+
+    // Cotas de la cavidad (dentro/junto a la cavidad)
+    if (scene.cavity.length) {
+      const cbb = window.BujiaTemplateGeometry.boundingBox(scene.cavity);
+      const ccx = (cbb.minX + cbb.maxX) / 2;
+      const ccy = (cbb.minY + cbb.maxY) / 2;
+      const label = fmtNum(cbb.maxX - cbb.minX) + " × " + fmtNum(cbb.maxY - cbb.minY) + " mm";
+      ctx.textBaseline = "middle";
+      const tw = ctx.measureText(label).width;
+      // Fondo para que la cota se lea sobre las guías.
+      ctx.fillStyle = colBg;
+      ctx.fillRect(tx(ccx) - tw / 2 - 5, ty(ccy) - 9, tw + 10, 18);
+      ctx.fillStyle = colCavity;
+      ctx.fillText(label, tx(ccx), ty(ccy));
+      ctx.textBaseline = "alphabetic";
+    }
   }
 
   // -------------------------------------------------------------------- SVG
@@ -153,6 +201,15 @@
     // Texto (fuera del grupo invertido para que no quede espejado).
     parts.push("<text x=\"0\" y=\"" + (-h / 2 - pad / 3) + "\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.05) + "\" fill=\"#1f2933\" text-anchor=\"middle\">" + scene.dims.width + " mm</text>");
     parts.push("<text x=\"" + (-w / 2 - pad / 3) + "\" y=\"0\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.05) + "\" fill=\"#1f2933\" text-anchor=\"middle\" transform=\"rotate(-90 " + (-w / 2 - pad / 3) + " 0)\">" + scene.dims.height + " mm</text>");
+
+    // Cota de la cavidad (texto en su centro; se niega la Y por el flip).
+    if (scene.cavity.length) {
+      const cbb = geom.boundingBox(scene.cavity);
+      const ccx = (cbb.minX + cbb.maxX) / 2;
+      const ccy = (cbb.minY + cbb.maxY) / 2;
+      const cavLabel = (Math.round((cbb.maxX - cbb.minX) * 100) / 100) + " × " + (Math.round((cbb.maxY - cbb.minY) * 100) / 100) + " mm";
+      parts.push("<text x=\"" + ccx + "\" y=\"" + (-ccy) + "\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.045) + "\" fill=\"#2563eb\" text-anchor=\"middle\" dominant-baseline=\"middle\">" + cavLabel + "</text>");
+    }
 
     parts.push("</svg>");
     return parts.join("\n");

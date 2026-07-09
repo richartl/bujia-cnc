@@ -10,6 +10,8 @@
 - Corte **por fuera de la línea** con parámetro de **holgura** por sección (radio de fresa + holgura), pensado para copiadora/guide bushing.
 - Previsualización 2D en **Canvas** en tiempo real (contorno, cavidad, guías, centro/origen y cotas). Origen en el centro de la pieza.
 - Rotación de **toda la plantilla** (0/90/180/270) alrededor del centro: rota de forma conjunta contorno, cavidad, offsets, guías, previsualización, `preview.svg` y los tres archivos de G-code (rotaciones exactas de cuarto de vuelta, sin ruido de coma flotante).
+- El preview del constructor se reubica al panel derecho y queda **fijo (sticky) abajo a la derecha**, siempre visible mientras se editan los parámetros, con actualización en vivo.
+- El preview (Canvas y `preview.svg`) ahora muestra **cotas**: ancho y alto de la pieza con líneas de cota y medida de la cavidad.
 - Descargas: `01_Contorno.nc`, `02_Cavidad_Humbucker.nc`, `03_Guias.nc` y `preview.svg` a escala.
 - Arquitectura reutilizable: núcleo de G-code compartido (`js/gcode/gcode-core.js`), geometría (`js/template/geometry.js`), generadores (`js/gcode/template.js`), preview (`js/template/preview.js`), UI genérica (`js/ui/template-ui.js`) y descriptores por plantilla (`templates/*.js`). Una plantilla nueva solo aporta geometría.
 - Casos de regresión en `tests/template.test.js` (geometría, offset por fuera, contorno/cavidad/guías y SVG).

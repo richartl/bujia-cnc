@@ -30,15 +30,6 @@
           <p>Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).</p>
         </div>
 
-        <section class="card preview-card">
-          <canvas id="previewCanvas" class="preview-canvas" aria-label="Previsualización 2D"></canvas>
-          <div class="preview-legend">
-            <span class="key"><span class="swatch swatch--piece"></span>Contorno</span>
-            <span class="key"><span class="swatch swatch--cavity"></span>Cavidad</span>
-            <span class="key"><span class="swatch swatch--guide"></span>Guías de centro</span>
-          </div>
-        </section>
-
         <form class="tool-form" aria-label="Formulario plantilla Humbucker">
           <div class="form-group">
             <div class="form-group__title">Orientación de la plantilla</div>
@@ -269,7 +260,7 @@
         </form>
       </main>
 
-      <aside class="app__panel" aria-label="Descargas">
+      <aside class="app__panel template-panel" aria-label="Descargas y previsualización">
         <div class="panel-block">
           <div class="panel-block__title">Descargas</div>
           <button id="downloadAll" type="button" class="btn btn--primary btn--block">Generar y descargar todo</button>
@@ -280,6 +271,18 @@
             <button id="downloadSvg" type="button" class="btn">Preview<span class="download-file">&nbsp;· preview.svg</span></button>
           </div>
           <p id="templateStatus" class="hint" style="margin-top: var(--space-sm);"></p>
+        </div>
+
+        <div class="panel-block preview-sticky">
+          <div class="panel-block__title">Previsualización</div>
+          <div class="preview-frame">
+            <canvas id="previewCanvas" class="preview-canvas" aria-label="Previsualización 2D"></canvas>
+            <div class="preview-legend">
+              <span class="key"><span class="swatch swatch--piece"></span>Contorno</span>
+              <span class="key"><span class="swatch swatch--cavity"></span>Cavidad</span>
+              <span class="key"><span class="swatch swatch--guide"></span>Guías</span>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
