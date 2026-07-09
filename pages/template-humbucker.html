@@ -33,22 +33,22 @@
         <section class="card collapsible" id="gcodePreviewsCard">
           <button type="button" class="collapsible__head" id="gcodePreviewsToggle" aria-expanded="false" aria-controls="gcodePreviewsBody">
             <span class="collapsible__chevron" aria-hidden="true">▸</span>
-            <span>Previsualización de cada G-code</span>
+            <span>Código de cada G-code (.nc)</span>
             <span class="collapsible__hint muted">Contorno · Cavidad · Guías</span>
           </button>
           <div class="collapsible__body" id="gcodePreviewsBody" hidden>
-            <div class="gcode-preview-grid">
-              <figure class="gcode-preview">
-                <figcaption>01 Contorno</figcaption>
-                <div class="preview-frame"><canvas id="previewContour" class="mini-canvas" aria-label="Recorrido del contorno"></canvas></div>
+            <div class="gcode-code-grid">
+              <figure class="gcode-code">
+                <figcaption><span>01_Contorno.nc</span><span class="gcode-lines muted" id="linesContour"></span></figcaption>
+                <textarea id="codeContour" class="gcode-output" readonly spellcheck="false" aria-label="Código de 01_Contorno.nc"></textarea>
               </figure>
-              <figure class="gcode-preview">
-                <figcaption>02 Cavidad</figcaption>
-                <div class="preview-frame"><canvas id="previewCavity" class="mini-canvas" aria-label="Recorrido de la cavidad"></canvas></div>
+              <figure class="gcode-code">
+                <figcaption><span>02_Cavidad_Humbucker.nc</span><span class="gcode-lines muted" id="linesCavity"></span></figcaption>
+                <textarea id="codeCavity" class="gcode-output" readonly spellcheck="false" aria-label="Código de 02_Cavidad_Humbucker.nc"></textarea>
               </figure>
-              <figure class="gcode-preview">
-                <figcaption>03 Guías</figcaption>
-                <div class="preview-frame"><canvas id="previewGuides" class="mini-canvas" aria-label="Recorrido de las guías"></canvas></div>
+              <figure class="gcode-code">
+                <figcaption><span>03_Guias.nc</span><span class="gcode-lines muted" id="linesGuides"></span></figcaption>
+                <textarea id="codeGuides" class="gcode-output" readonly spellcheck="false" aria-label="Código de 03_Guias.nc"></textarea>
               </figure>
             </div>
           </div>

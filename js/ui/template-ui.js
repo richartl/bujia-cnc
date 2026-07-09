@@ -184,18 +184,23 @@
     renderPreview();
   }
 
-  // Sección colapsable con la previsualización de los tres G-code a la vez.
+  // Sección colapsable con el CÓDIGO .nc de los tres archivos a la vez.
+  function setCodeBlock(areaId, linesId, text) {
+    const area = byId(areaId);
+    if (!area) return;
+    area.value = (text === null || text === undefined)
+      ? "Corrige la tabla Adaptive para ver este G-code."
+      : text;
+    const lines = byId(linesId);
+    if (lines) lines.textContent = text ? (text.split("\n").length + " líneas") : "";
+  }
+
   function renderGcodePreviews() {
     const body = byId("gcodePreviewsBody");
-    if (!body || body.hidden) return; // No dibujar mientras está oculta.
-
-    const geometry = buildGeometry();
-    const preview = window.BujiaTemplatePreview;
-    const gcode = window.BujiaTemplateGcode;
-
-    preview.renderToolpaths(byId("previewContour"), geometry, [gcode.contourToolpath(geometry, contourParams())], "contour");
-    preview.renderToolpaths(byId("previewCavity"), geometry, gcode.cavityToolpaths(geometry, cavityParams()), "cavity");
-    preview.renderToolpaths(byId("previewGuides"), geometry, gcode.guideToolpaths(geometry, guidesParams()), "guides");
+    if (!body || body.hidden) return; // No generar mientras está oculta.
+    setCodeBlock("codeContour", "linesContour", generateContour());
+    setCodeBlock("codeCavity", "linesCavity", generateCavity());
+    setCodeBlock("codeGuides", "linesGuides", generateGuides());
   }
 
   function toggleGcodePreviews() {
