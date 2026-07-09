@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Corregida la plantilla **Humbucker (con orejas)**, que tenía proporciones y concepto equivocados. Ahora usa medidas de referencia reales (Seymour Duncan / Gibson): cuerpo 74 × 24 mm, orejas de 10 mm que llevan el total a 92 × 42 mm, radio de esquinas 4 mm, profundidad recomendada 16.5 mm con fresa mínima de 6 mm. Se corrigió también el concepto de corte: **todo el bolsillo (cuerpo + orejas) se corta a una sola profundidad uniforme** dentro del mismo archivo de cavidad, no como un relieve superficial aparte a una profundidad distinta. Se modela con `geometry.cavities` (cuerpo + 2 orejas, reutilizando la misma mecánica de Precision Bass) en vez del mecanismo `earPockets`/`hasEars` anterior, que se retiró del código por quedar sin uso (`js/gcode/template.js`, `js/template/preview.js`, `js/ui/template-ui.js`, y el campo «Profundidad de orejas» eliminado de las 20 páginas de plantillas).
+
 ### Added
 
 - Ampliado el catálogo de **Plantillas de hardware** (fuera de pastillas), siguiendo el mismo patrón genérico: **Neck Pocket** (bolsillo de mástil atornillado tipo Fender, 55.6 × 76.2 mm), **Puentes** (relieve de montaje para puente fijo/hardtail tipo string-through, 78 × 41 mm), **Jack** (salida circular de 7/8", 22.2 mm de diámetro — la cavidad redondeada con radio = mitad del ancho/alto forma un círculo), **Controles** (cavidad de electrónica genérica, tamaño de referencia ajustable) y **Personalizadas** (plantilla en blanco, sin sesgo de forma, para cualquier cavidad rectangular que no encaje en las demás categorías).

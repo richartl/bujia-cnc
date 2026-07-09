@@ -2,9 +2,9 @@
   const geom = window.BujiaTemplateGeometry;
 
   // Una plantilla puede tener una o varias cavidades (p. ej. Precision Bass de
-  // bobina partida) y opcionalmente relieves de orejas de montaje (p. ej.
-  // Humbucker con orejas). Se normalizan aquí para que el resto del preview
-  // no necesite distinguir casos.
+  // bobina partida, o Humbucker con orejas: cuerpo + orejas como cavidades
+  // independientes cortadas a la misma profundidad). Se normaliza aquí para
+  // que el resto del preview no necesite distinguir casos.
   function cavityRectsOf(geometry) {
     if (Array.isArray(geometry.cavities) && geometry.cavities.length) return geometry.cavities;
     return geometry.cavity ? [geometry.cavity] : [];
@@ -17,9 +17,6 @@
     const piece = geom.rotatePath(geom.roundedRectPath(geometry.piece, { cornerSegments: 16 }), rotation);
     const cavities = cavityRectsOf(geometry).map(function (rect) {
       return geom.rotatePath(geom.roundedRectPath(rect, { cornerSegments: 16 }), rotation);
-    });
-    const earPockets = (geometry.earPockets || []).map(function (rect) {
-      return geom.rotatePath(geom.roundedRectPath(rect, { cornerSegments: 12 }), rotation);
     });
     const halfW = geometry.piece.width / 2;
     const halfH = geometry.piece.height / 2;
@@ -34,7 +31,6 @@
     return {
       piece: piece,
       cavities: cavities,
-      earPockets: earPockets,
       guides: {
         horizontal: geometry.guides.horizontal !== false,
         vertical: geometry.guides.vertical !== false,
@@ -60,7 +56,6 @@
       text: v("--color-muted", "#8b98a6"),
       faint: v("--color-faint", "#6b7785"),
       success: v("--color-success", "#3fb765"),
-      ear: v("--color-danger", "#f2665a"),
     };
   }
 
@@ -139,7 +134,6 @@
 
     strokePolyline(view, scene.piece, col.piece, 2, true);
     scene.cavities.forEach(function (cavity) { strokePolyline(view, cavity, col.accent, 2, true); });
-    scene.earPockets.forEach(function (ear) { strokePolyline(view, ear, col.ear, 1.5, true); });
     drawGuides(view, scene, col.guide, 1);
 
     // Origen / centro
@@ -308,9 +302,6 @@
     if (scene.piece.length) parts.push("<path d=\"" + pathData(scene.piece) + "\" stroke=\"#1f2933\"/>");
     scene.cavities.forEach(function (cavity) {
       if (cavity.length) parts.push("<path d=\"" + pathData(cavity) + "\" stroke=\"#2563eb\"/>");
-    });
-    scene.earPockets.forEach(function (ear) {
-      if (ear.length) parts.push("<path d=\"" + pathData(ear) + "\" stroke=\"#dc4c3f\"/>");
     });
 
     if (scene.guides.horizontal) parts.push("<line x1=\"" + hSeg[0].x + "\" y1=\"" + hSeg[0].y + "\" x2=\"" + hSeg[1].x + "\" y2=\"" + hSeg[1].y + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");

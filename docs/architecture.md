@@ -90,9 +90,10 @@ Cada plantilla nueva de pastilla (guitarra o bajo) debe seguir exactamente el pa
 3. Marcar la hoja correspondiente como `stable` con su `page` en `templates/registry.js`.
 4. Añadir el caso al smoke test `tests/template-catalog.test.js` (se detecta automáticamente si el registry apunta a un descriptor válido).
 
-**Geometría con varias cavidades.** Una plantilla puede tener una sola cavidad (`geometry.cavity`) o varias (`geometry.cavities`, un arreglo), por ejemplo Precision Bass con su bobina partida. El generador de G-code y el preview normalizan ambas formas (`cavityRectsOf()` en `js/gcode/template.js` y `js/template/preview.js`); si no hay `cavities`, se trata `cavity` como una lista de un elemento, así que las plantillas existentes no cambian su salida.
+**Geometría con varias cavidades.** Una plantilla puede tener una sola cavidad (`geometry.cavity`) o varias (`geometry.cavities`, un arreglo), todas cortadas a la misma profundidad dentro del mismo archivo `02_Cavidad_<Plantilla>.nc`. El generador de G-code y el preview normalizan ambas formas (`cavityRectsOf()` en `js/gcode/template.js` y `js/template/preview.js`); si no hay `cavities`, se trata `cavity` como una lista de un elemento, así que las plantillas existentes no cambian su salida. Dos usos actuales:
 
-**Orejas de montaje.** Una plantilla puede definir `geometry.earPockets` (arreglo de rectángulos) para relieves superficiales adicionales, como las orejas de un humbucker de montaje en madera. Se cortan en una sola pasada, a una profundidad fija (`params.earDepth`) independiente del plan de profundidad de la cavidad principal, y se agregan al mismo archivo `02_Cavidad_<Plantilla>.nc` después del vaciado principal. El campo de formulario correspondiente solo se muestra si el descriptor define `hasEars: true` (mecanismo genérico `data-requires` en `js/ui/template-ui.js`, reutilizable para futuros campos opcionales por plantilla).
+- **Precision Bass**: bobina partida, dos cavidades independientes desfasadas.
+- **Humbucker con orejas**: cuerpo + dos orejas de montaje como tres cavidades independientes que comparten la misma profundidad (sin relieve superficial aparte; el corte real de una pastilla con orejas es un único bolsillo con esa forma, no dos niveles distintos).
 
 **Medidas de referencia.** Las dimensiones de cavidad de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería, documentadas en el campo `description` de cada descriptor. No sustituyen la verificación contra la pastilla real antes de cortar.
 

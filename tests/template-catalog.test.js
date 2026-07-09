@@ -47,7 +47,7 @@ assert(leaves.length >= 15, 'El catálogo debe tener al menos 15 plantillas esta
 
 const cutParams = {
   mode: 'manual', toolDiameter: 6, clearance: 0, stepover: 2.4, passes: 3, finalDepth: 12,
-  feed: 700, rpm: 12000, plungeFeed: 150, safeZ: 6, direction: 'climb', earDepth: 3,
+  feed: 700, rpm: 12000, plungeFeed: 150, safeZ: 6, direction: 'climb',
 };
 const guideParams = { toolDiameter: 3, feed: 500, rpm: 12000, depth: 1, safeZ: 6, horizontal: true, vertical: true };
 
@@ -97,13 +97,27 @@ assert(Array.isArray(precisionGeometry.cavities) && precisionGeometry.cavities.l
 const precisionRings = gcode.cavityToolpaths(precisionGeometry, cutParams);
 assert(precisionRings.length > 0, 'Precision Bass debe generar anillos de vaciado para ambas cavidades.');
 
-// Humbucker con orejas: cavidad principal + relieves de orejas independientes.
+// Humbucker con orejas: cuerpo + 2 orejas como cavidades independientes,
+// todas cortadas a la misma profundidad (sin relieve superficial aparte).
+// Medidas de referencia: Seymour Duncan / Gibson (cuerpo 74x24, total con
+// orejas 92x42).
 const ears = templates['humbucker-ears'];
 const earsGeometry = ears.buildGeometry(ears.defaults);
-assert(Array.isArray(earsGeometry.earPockets) && earsGeometry.earPockets.length === 2, 'Humbucker con orejas debe definir 2 relieves de orejas.');
+assert(Array.isArray(earsGeometry.cavities) && earsGeometry.cavities.length === 3, 'Humbucker con orejas debe tener 3 cavidades (cuerpo + 2 orejas).');
+
+const [earsBody] = earsGeometry.cavities;
+assert(earsBody.width === 74 && earsBody.height === 24, 'El cuerpo del Humbucker con orejas debe medir 74 x 24 mm.');
+
+const earsOutline = earsGeometry.cavities.reduce(function (points, rect) {
+  return points.concat(geom.roundedRectPath(rect, { cornerSegments: 8 }));
+}, []);
+const earsBbox = geom.boundingBox(earsOutline);
+const earsTotalWidth = earsBbox.maxX - earsBbox.minX;
+const earsTotalHeight = earsBbox.maxY - earsBbox.minY;
+assert(Math.abs(earsTotalWidth - 92) < 0.01, 'El ancho total con orejas debe ser 92 mm (obtenido: ' + earsTotalWidth + ').');
+assert(Math.abs(earsTotalHeight - 42) < 0.01, 'El alto total con orejas debe ser 42 mm (obtenido: ' + earsTotalHeight + ').');
+
 const earsCavityGcode = gcode.generatePocketGcode(earsGeometry, cutParams, null);
-assert(earsCavityGcode.includes('OREJAS DE MONTAJE'), 'El G-code de cavidad debe incluir el corte de las orejas.');
-const earsGcodeNoDepth = gcode.generatePocketGcode(earsGeometry, Object.assign({}, cutParams, { earDepth: 0 }), null);
-assert(!earsGcodeNoDepth.includes('OREJAS DE MONTAJE'), 'Sin earDepth no debe cortarse el relieve de orejas.');
+assert(earsCavityGcode.includes('Cavidades: 3'), 'El G-code de cavidad debe indicar las 3 cavidades cortadas a la misma profundidad.');
 
 console.log(JSON.stringify({ templateCatalogTestsPassed: true, templatesChecked: leaves.length }));

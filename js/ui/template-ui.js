@@ -77,8 +77,6 @@
       plungeFeed: num("cavityPlunge"),
       safeZ: num("cavitySafeZ"),
       direction: val("cavityDirection"),
-      // Solo aplica en plantillas con orejas de montaje (geometry.earPockets).
-      earDepth: num("cavityEarDepth"),
     };
   }
 
@@ -174,9 +172,7 @@
     if (previewView === "contour") {
       preview.renderToolpaths(canvas, geometry, [gcode.contourToolpath(geometry, contourParams())], "contour");
     } else if (previewView === "cavity") {
-      const cavityParamsValue = cavityParams();
-      const cavityPaths = gcode.cavityToolpaths(geometry, cavityParamsValue).concat(gcode.earPocketToolpaths(geometry, cavityParamsValue));
-      preview.renderToolpaths(canvas, geometry, cavityPaths, "cavity");
+      preview.renderToolpaths(canvas, geometry, gcode.cavityToolpaths(geometry, cavityParams()), "cavity");
     } else if (previewView === "guides") {
       preview.renderToolpaths(canvas, geometry, gcode.guideToolpaths(geometry, guidesParams()), "guides");
     } else {
@@ -255,16 +251,6 @@
     document.querySelectorAll("[data-bind=\"cavityFileName\"]").forEach(function (el) { el.textContent = "02_Cavidad_" + fileSlug(title) + ".nc"; });
   }
 
-  // Muestra/oculta campos que solo aplican a ciertas plantillas
-  // (marcados en el HTML con data-requires="ears", etc.).
-  function applyConditionalFields() {
-    document.querySelectorAll("[data-requires]").forEach(function (el) {
-      const need = el.getAttribute("data-requires");
-      const has = need === "ears" ? Boolean(descriptor.hasEars) : true;
-      el.hidden = !has;
-    });
-  }
-
   function bindEvents() {
     const form = document.querySelector(".tool-form");
     if (form) form.addEventListener("input", renderPreview);
@@ -296,7 +282,6 @@
     if (!descriptor) { setStatus("Plantilla no encontrada."); return; }
 
     applyDescriptorText();
-    applyConditionalFields();
     fillDefaults();
 
     contourController = window.BujiaAdaptivePasses.createAdaptivePassesController({

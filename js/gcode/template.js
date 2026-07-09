@@ -58,19 +58,6 @@
     return rings;
   }
 
-  // Relieves poco profundos para las orejas de montaje (p. ej. Humbucker con
-  // orejas). Solo existen si la plantilla define geometry.earPockets.
-  function earPocketToolpaths(geometry, params) {
-    if (!Array.isArray(geometry.earPockets) || !geometry.earPockets.length) return [];
-    const offset = outsideOffset(params.toolDiameter, params.clearance);
-    const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
-    let rings = [];
-    geometry.earPockets.forEach(function (rect) {
-      rings = rings.concat(ringsForRect(rect, offset, stepover, params, geometry));
-    });
-    return rings;
-  }
-
   function guideSegments(geometry, params) {
     const halfW = geometry.piece.width / 2;
     const halfH = geometry.piece.height / 2;
@@ -136,7 +123,6 @@
     const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
     const rings = cavityToolpaths(geometry, params);
     const cavityCount = cavityRectsOf(geometry).length;
-    const earRings = earPocketToolpaths(geometry, params);
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -154,12 +140,11 @@
       "Fresa: " + core.clean(params.toolDiameter) + " mm, holgura: " + core.clean(params.clearance) + " mm, stepover: " + core.clean(stepover) + " mm",
     ];
     if (cavityCount > 1) {
-      description.push("Cavidades: " + cavityCount + " (bobina partida), modo: " + params.mode);
+      description.push("Cavidades: " + cavityCount + " (multiples partes a la misma profundidad), modo: " + params.mode);
     } else {
       description.push("Cavidad: " + core.clean(geometry.cavity.width) + " x " + core.clean(geometry.cavity.height) + " mm");
       description.push("Centro: X" + core.clean(geometry.cavity.cx) + " Y" + core.clean(geometry.cavity.cy) + ", modo: " + params.mode);
     }
-    if (earRings.length) description.push("Incluye orejas de montaje, profundidad Z-" + core.clean(params.earDepth) + " mm");
 
     const lines = core.startProgram({
       title: "02 Cavidad",
@@ -182,24 +167,6 @@
         }).forEach(function (line) { lines.push(line); });
       });
     });
-
-    // Orejas de montaje: relieve superficial en una sola pasada, poco
-    // profundo, independiente del plan de profundidad de la cavidad principal.
-    if (earRings.length && params.earDepth > 0) {
-      const earDepth = Math.min(Math.abs(params.earDepth), Math.abs(params.finalDepth || params.earDepth));
-      lines.push("");
-      lines.push(core.comment("OREJAS DE MONTAJE - Z-" + core.clean(earDepth)));
-      if (params.mode === "adaptive") lines.push("M3 S" + core.clean(params.rpm));
-      earRings.forEach(function (ring, ringIndex) {
-        lines.push(core.comment("Oreja, anillo " + (ringIndex + 1) + " de " + earRings.length));
-        core.cutClosedPath(ring, {
-          safeZ: params.safeZ,
-          depth: earDepth,
-          feed: params.feed,
-          plungeFeed: params.plungeFeed || params.feed,
-        }).forEach(function (line) { lines.push(line); });
-      });
-    }
 
     lines.push("");
     core.endProgram(params.safeZ).forEach(function (line) { lines.push(line); });
@@ -243,7 +210,6 @@
     outsideOffset: outsideOffset,
     contourToolpath: contourToolpath,
     cavityToolpaths: cavityToolpaths,
-    earPocketToolpaths: earPocketToolpaths,
     guideToolpaths: guideToolpaths,
     generateContourGcode: generateContourGcode,
     generatePocketGcode: generatePocketGcode,
