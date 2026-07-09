@@ -53,7 +53,7 @@ Cada página debe ser entendible de forma aislada. La lógica compartida solo de
 
 ## Estado actual
 
-`index.html` es un dashboard que enlaza a herramientas independientes bajo `pages/`. Están operativas Surfacing (`pages/surfacing.html`), Cantos (`pages/edge.html`), Settings (`pages/settings.html`) y Plantillas (`pages/templates.html`, con el catálogo completo de pastillas de guitarra y bajo); Ranuras, Taladros y Cavidades aparecen como «Próximamente».
+`index.html` es un dashboard que enlaza a herramientas independientes bajo `pages/`. Están operativas Surfacing (`pages/surfacing.html`), Cantos (`pages/edge.html`), Settings (`pages/settings.html`) y Plantillas (`pages/templates.html`, con el catálogo completo de pastillas de guitarra y bajo, más Neck Pocket, Puentes, Jack, Controles y Personalizadas); Ranuras y Taladros aparecen como «Próximamente». Dentro de Plantillas, Pickguards y las siluetas de cuerpo completo en Cavidades también son «Próximamente» (requieren contornos orgánicos reales, ver `docs/architecture.md`).
 
 La interfaz usa un layout de aplicación de escritorio (tema oscuro, barra superior, menú lateral, panel derecho) construido solo con HTML, CSS y JavaScript nativo, sin frameworks ni build, y funciona abriendo `index.html` con `file://`.
 

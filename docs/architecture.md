@@ -96,6 +96,18 @@ Cada plantilla nueva de pastilla (guitarra o bajo) debe seguir exactamente el pa
 
 **Medidas de referencia.** Las dimensiones de cavidad de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería, documentadas en el campo `description` de cada descriptor. No sustituyen la verificación contra la pastilla real antes de cortar.
 
+### Límite actual: solo rectángulos redondeados
+
+Toda la geometría de Plantillas (pieza, cavidad, orejas) se construye a partir de rectángulos redondeados (`roundedRectPath`), incluyendo casos degenerados como un círculo (ancho = alto, radio = mitad de ambos, ver plantilla Jack) o una cápsula (radio = mitad del alto, ver Single Coil). Esto cubre bien pastillas, bolsillos de mástil, relieves de puente y cavidades de electrónica.
+
+**No cubre** contornos orgánicos reales: la silueta de un pickguard o el contorno completo de un cuerpo de guitarra (Stratocaster, Telecaster, Les Paul, etc.) no son rectángulos, y aproximarlos como tales produciría una forma incorrecta. Por eso `Pickguards` y los ítems de silueta de cuerpo dentro de `Cavidades` permanecen como «Próximamente» en `templates/registry.js` en vez de implementarse con geometría equivocada. Soportarlos correctamente requeriría:
+
+1. Un tipo de geometría nuevo (contorno arbitrario: polilínea o curvas, no solo rectángulo+radio).
+2. Datos de contorno reales (coordenadas digitalizadas de una plantilla o plano conocido), no solo dos medidas.
+3. Extender `js/template/geometry.js`, `js/gcode/template.js` y `js/template/preview.js` para aceptar ese tipo de geometría junto al rectángulo redondeado existente, sin romper las plantillas actuales.
+
+Es un esfuerzo mayor y deliberadamente aparte del catálogo de pastillas y hardware simple.
+
 ## Herramientas previstas
 
 - Surfacing.

@@ -4,6 +4,8 @@
 
 ### Added
 
+- Ampliado el catálogo de **Plantillas de hardware** (fuera de pastillas), siguiendo el mismo patrón genérico: **Neck Pocket** (bolsillo de mástil atornillado tipo Fender, 55.6 × 76.2 mm), **Puentes** (relieve de montaje para puente fijo/hardtail tipo string-through, 78 × 41 mm), **Jack** (salida circular de 7/8", 22.2 mm de diámetro — la cavidad redondeada con radio = mitad del ancho/alto forma un círculo), **Controles** (cavidad de electrónica genérica, tamaño de referencia ajustable) y **Personalizadas** (plantilla en blanco, sin sesgo de forma, para cualquier cavidad rectangular que no encaje en las demás categorías).
+- **Decisión de alcance documentada**: *Pickguards* y las siluetas de cuerpo completo dentro de *Cavidades* (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass) requieren contornos orgánicos reales (curvas, no rectángulos redondeados) que el motor de geometría actual no soporta. Forzarlos como rectángulo redondeado produciría una forma incorrecta y potencialmente engañosa para una herramienta que corta madera real, así que se dejan explícitamente como «Próximamente» con un comentario en `templates/registry.js` explicando el motivo, en vez de aproximarlos mal.
 - Poblado el catálogo de **Plantillas de pastillas** con 14 plantillas nuevas siguiendo el mismo patrón que Humbucker (descriptor `templates/<id>.js` + página dedicada, sin cambiar interfaz, lógica ni generador):
   - Guitarra: Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, **Humbucker (con orejas)**, Personalizada.
   - Bajo: Jazz Bass, Precision, Music Man, Soapbar, EMG35, EMG40, Personalizada.

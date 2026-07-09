@@ -38,6 +38,10 @@
         },
       ],
     },
+    // "Cavidades" representa siluetas de cuerpo completo (contornos
+    // orgánicos reales, no rectángulos redondeados). Se deja como
+    // "Próximamente" hasta contar con datos de contorno reales y un motor de
+    // geometría que soporte contornos arbitrarios (ver docs/architecture.md).
     {
       title: "Cavidades",
       children: [
@@ -49,12 +53,15 @@
         leaf("Personalizada"),
       ],
     },
-    { title: "Neck Pocket", status: "soon" },
+    leaf("Neck Pocket", "stable", "template-neck-pocket.html"),
+    // Pickguards requiere contornos orgánicos reales (silueta de la pastilla
+    // de plástico), no un rectángulo redondeado. Se deja "soon" hasta que el
+    // motor de geometría soporte contornos arbitrarios (ver docs/architecture.md).
     { title: "Pickguards", status: "soon" },
-    { title: "Puentes", status: "soon" },
-    { title: "Jack", status: "soon" },
-    { title: "Controles", status: "soon" },
-    { title: "Personalizadas", status: "soon" },
+    leaf("Puentes", "stable", "template-puentes.html"),
+    leaf("Jack", "stable", "template-jack.html"),
+    leaf("Controles", "stable", "template-controles.html"),
+    leaf("Personalizadas", "stable", "template-custom-blank.html"),
   ];
 
   window.BujiaTemplateRegistry = {

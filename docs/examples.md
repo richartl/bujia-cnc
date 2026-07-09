@@ -71,6 +71,14 @@ Implementado — Pastillas de bajo:
 
 - Jazz Bass, Precision (bobina partida, dos cavidades), Music Man, Soapbar, EMG35, EMG40, Personalizada.
 
-Pendiente («Próximamente»): Cavidades de cuerpo completo (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada), Neck Pocket, Pickguards, Puentes, Jack, Controles, Personalizadas.
+Implementado — Hardware:
 
-Las dimensiones de cada plantilla de pastilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería; cada descriptor documenta su fuente y recomienda verificar contra la pastilla real antes de cortar.
+- Neck Pocket (bolsillo de mástil atornillado tipo Fender).
+- Puentes (relieve de montaje para puente fijo/hardtail).
+- Jack (salida circular de 7/8").
+- Controles (cavidad de electrónica genérica).
+- Personalizadas (plantilla en blanco para cualquier cavidad rectangular).
+
+Pendiente («Próximamente»): Pickguards y las siluetas de cuerpo completo en Cavidades (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada). Ambas requieren contornos orgánicos reales (no rectángulos redondeados); ver «Límite actual» en `docs/architecture.md`.
+
+Las dimensiones de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería; cada descriptor documenta su fuente y recomienda verificar contra la pieza real antes de cortar.

@@ -38,7 +38,7 @@ Agregar páginas independientes:
 - Cavidades.
 - Perfilados.
 - Escalas.
-- Plantillas (Template Builder): módulo independiente y reutilizable. Implementado el catálogo completo de pastillas de guitarra (Humbucker, Humbucker con orejas, Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, Personalizada) y de bajo (Jazz Bass, Precision, Music Man, Soapbar, EMG35, EMG40, Personalizada), todas sobre la misma interfaz, lógica y generador. Pendiente: cavidades de cuerpo completo (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada), Neck Pocket, pickguards, puentes, jack, controles.
+- Plantillas (Template Builder): módulo independiente y reutilizable. Implementado el catálogo completo de pastillas de guitarra (Humbucker, Humbucker con orejas, Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, Personalizada), de bajo (Jazz Bass, Precision, Music Man, Soapbar, EMG35, EMG40, Personalizada) y de hardware simple (Neck Pocket, Puentes, Jack, Controles, Personalizadas), todas sobre la misma interfaz, lógica y generador. Pendiente, y deliberadamente aparte por requerir contornos orgánicos reales: Pickguards y las siluetas de cuerpo completo en Cavidades (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada) — ver `docs/architecture.md`.
 
 ## Fase 6: Casos de regresión
 

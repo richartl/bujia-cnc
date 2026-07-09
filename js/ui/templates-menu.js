@@ -24,7 +24,7 @@
       "Neck Pocket": "▭",
       "Pickguards": "◳",
       "Puentes": "⧉",
-      "Jack": "◎",
+      "Jack": "●",
       "Controles": "⊙",
       "Personalizadas": "✎",
       "Personalizada": "✎",
