@@ -111,6 +111,37 @@ const contourRot = gcode.generateContourGcode(rotatedGeometry, {
 }, null);
 assert(contourRot !== contour, 'El contorno rotado 90° debe diferir del contorno sin rotar.');
 
+// El sentido del corte NO debe cambiar al rotar: el área firmada (signo =
+// horario/antihorario) del recorrido debe conservarse en 0/90/180/270.
+function signedArea(points) {
+  let area = 0;
+  for (let i = 0; i < points.length; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % points.length];
+    area += a.x * b.y - b.x * a.y;
+  }
+  return area / 2;
+}
+function geoRot(angle) {
+  const g = humbucker.buildGeometry(humbucker.defaults);
+  g.rotation = angle;
+  return g;
+}
+function contourSign(angle, direction) {
+  return Math.sign(signedArea(gcode.contourToolpath(geoRot(angle), { toolDiameter: 6, clearance: 0, direction: direction })));
+}
+const senseClimb = contourSign(0, 'climb');
+assert(senseClimb !== 0, 'El contorno cerrado debe tener área distinta de cero.');
+assert(contourSign(90, 'climb') === senseClimb, 'Rotar 90° conserva el sentido del corte.');
+assert(contourSign(180, 'climb') === senseClimb, 'Rotar 180° conserva el sentido del corte.');
+assert(contourSign(270, 'climb') === senseClimb, 'Rotar 270° conserva el sentido del corte.');
+assert(contourSign(0, 'conventional') === -senseClimb, 'Climb y Conventional tienen sentidos opuestos.');
+
+// La cavidad también conserva el sentido al rotar.
+const cavitySign0 = Math.sign(signedArea(gcode.cavityToolpaths(geoRot(0), { toolDiameter: 6, clearance: 0, stepover: 3, direction: 'climb' })[0]));
+const cavitySign90 = Math.sign(signedArea(gcode.cavityToolpaths(geoRot(90), { toolDiameter: 6, clearance: 0, stepover: 3, direction: 'climb' })[0]));
+assert(cavitySign0 === cavitySign90 && cavitySign0 !== 0, 'La cavidad conserva el sentido al rotar.');
+
 // ---------------------------------------------------------------------- SVG
 const svg = preview.buildSvg(geometry);
 assert(svg.includes('<svg') && svg.includes('viewBox'), 'El SVG debe tener raíz y viewBox.');

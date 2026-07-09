@@ -275,6 +275,12 @@
 
         <div class="panel-block preview-sticky">
           <div class="panel-block__title">Previsualización</div>
+          <div class="preview-views" role="tablist" aria-label="Vista de previsualización">
+            <button type="button" class="preview-view is-active" data-preview-view="design">Diseño</button>
+            <button type="button" class="preview-view" data-preview-view="contour">Contorno</button>
+            <button type="button" class="preview-view" data-preview-view="cavity">Cavidad</button>
+            <button type="button" class="preview-view" data-preview-view="guides">Guías</button>
+          </div>
           <div class="preview-frame">
             <canvas id="previewCanvas" class="preview-canvas" aria-label="Previsualización 2D"></canvas>
             <div class="preview-legend">

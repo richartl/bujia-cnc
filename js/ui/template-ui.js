@@ -7,6 +7,7 @@
   let descriptor = null;
   let contourController = null;
   let cavityController = null;
+  let previewView = "design";
 
   function byId(id) { return document.getElementById(id); }
   function num(id) { const el = byId(id); return el ? Number(el.value) : 0; }
@@ -158,7 +159,27 @@
   // ---------------------------------------------------------- Preview
   function renderPreview() {
     const canvas = byId("previewCanvas");
-    window.BujiaTemplatePreview.renderCanvas(canvas, buildGeometry());
+    const geometry = buildGeometry();
+    const preview = window.BujiaTemplatePreview;
+    const gcode = window.BujiaTemplateGcode;
+
+    if (previewView === "contour") {
+      preview.renderToolpaths(canvas, geometry, [gcode.contourToolpath(geometry, contourParams())], "contour");
+    } else if (previewView === "cavity") {
+      preview.renderToolpaths(canvas, geometry, gcode.cavityToolpaths(geometry, cavityParams()), "cavity");
+    } else if (previewView === "guides") {
+      preview.renderToolpaths(canvas, geometry, gcode.guideToolpaths(geometry, guidesParams()), "guides");
+    } else {
+      preview.renderCanvas(canvas, geometry);
+    }
+  }
+
+  function setPreviewView(view) {
+    previewView = view;
+    document.querySelectorAll("[data-preview-view]").forEach(function (button) {
+      button.classList.toggle("is-active", button.getAttribute("data-preview-view") === view);
+    });
+    renderPreview();
   }
 
   // ------------------------------------------------------------ Modo
@@ -190,6 +211,12 @@
     byId("downloadGuides").addEventListener("click", function () { download("guides"); });
     byId("downloadSvg").addEventListener("click", function () { download("svg"); });
     byId("downloadAll").addEventListener("click", downloadAll);
+
+    document.querySelectorAll("[data-preview-view]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        setPreviewView(button.getAttribute("data-preview-view"));
+      });
+    });
 
     window.addEventListener("resize", renderPreview);
   }

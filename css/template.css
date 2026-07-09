@@ -35,6 +35,39 @@ body[data-template] {
   padding-top: var(--space-sm);
 }
 
+/* Selector de vista del preview (Diseño / Contorno / Cavidad / Guías) */
+.preview-views {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: var(--space-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.2rem;
+}
+
+.preview-view {
+  flex: 1;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 0.2rem);
+  padding: 0.4rem 0.3rem;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-view:hover {
+  color: var(--color-text);
+}
+
+.preview-view.is-active {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
 .preview-frame {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

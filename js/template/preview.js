@@ -34,12 +34,25 @@
     };
   }
 
-  // ------------------------------------------------------------------ Canvas
-  function renderCanvas(canvas, geometry) {
-    if (!canvas || !canvas.getContext) return;
-    const ctx = canvas.getContext("2d");
-    const scene = buildScene(geometry);
+  function colors() {
+    const s = getComputedStyle(document.documentElement);
+    function v(name, fallback) { return s.getPropertyValue(name).trim() || fallback; }
+    return {
+      bg: v("--color-app", "#0e1116"),
+      piece: v("--color-border-strong", "#38434f"),
+      accent: v("--color-accent", "#4a9eff"),
+      guide: v("--color-warning", "#e0a23a"),
+      text: v("--color-muted", "#8b98a6"),
+      faint: v("--color-faint", "#6b7785"),
+      success: v("--color-success", "#3fb765"),
+    };
+  }
 
+  // Prepara el canvas y devuelve un encuadre (origen centrado, Y hacia arriba)
+  // que encaja el rectángulo "extent" (en mm). Compartido por todas las vistas
+  // para que dibujo y recorridos usen la misma escala.
+  function setupView(canvas, extent) {
+    const ctx = canvas.getContext("2d");
     const cssWidth = canvas.clientWidth || 640;
     const cssHeight = canvas.clientHeight || 420;
     const ratio = window.devicePixelRatio || 1;
@@ -47,65 +60,80 @@
     canvas.height = Math.round(cssHeight * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-    const styles = getComputedStyle(document.documentElement);
-    const colBg = styles.getPropertyValue("--color-app").trim() || "#0e1116";
-    const colPiece = styles.getPropertyValue("--color-border-strong").trim() || "#38434f";
-    const colCavity = styles.getPropertyValue("--color-accent").trim() || "#4a9eff";
-    const colGuide = styles.getPropertyValue("--color-warning").trim() || "#e0a23a";
-    const colText = styles.getPropertyValue("--color-muted").trim() || "#8b98a6";
-
-    ctx.fillStyle = colBg;
+    const col = colors();
+    ctx.fillStyle = col.bg;
     ctx.fillRect(0, 0, cssWidth, cssHeight);
 
-    const pad = 40;
-    const w = Math.max(1, scene.dims.width);
-    const h = Math.max(1, scene.dims.height);
-    const scale = Math.min((cssWidth - pad * 2) / w, (cssHeight - pad * 2) / h);
+    const pad = 42;
+    const halfX = Math.max(1, Math.max(Math.abs(extent.minX), Math.abs(extent.maxX)));
+    const halfY = Math.max(1, Math.max(Math.abs(extent.minY), Math.abs(extent.maxY)));
+    const scale = Math.min((cssWidth / 2 - pad) / halfX, (cssHeight / 2 - pad) / halfY);
     const cx = cssWidth / 2;
     const cy = cssHeight / 2;
 
-    // Transforma un punto en mm (origen centro, Y arriba) a pixeles de canvas.
-    function tx(x) { return cx + x * scale; }
-    function ty(y) { return cy - y * scale; }
+    return {
+      ctx: ctx,
+      col: col,
+      cssWidth: cssWidth,
+      cssHeight: cssHeight,
+      cx: cx,
+      cy: cy,
+      scale: scale,
+      tx: function (x) { return cx + x * scale; },
+      ty: function (y) { return cy - y * scale; },
+    };
+  }
 
-    function strokePath(points, color, lineWidth) {
-      if (!points.length) return;
-      ctx.beginPath();
-      ctx.moveTo(tx(points[0].x), ty(points[0].y));
-      for (let i = 1; i < points.length; i++) ctx.lineTo(tx(points[i].x), ty(points[i].y));
-      ctx.closePath();
-      ctx.lineWidth = lineWidth;
-      ctx.strokeStyle = color;
-      ctx.stroke();
-    }
-
-    strokePath(scene.piece, colPiece, 2);
-    strokePath(scene.cavity, colCavity, 2);
-
-    // Guías de centro (segmentos ya rotados)
-    ctx.strokeStyle = colGuide;
-    ctx.lineWidth = 1;
-    ctx.setLineDash([6, 4]);
-    function strokeSegment(segment) {
-      ctx.beginPath();
-      ctx.moveTo(tx(segment[0].x), ty(segment[0].y));
-      ctx.lineTo(tx(segment[1].x), ty(segment[1].y));
-      ctx.stroke();
-    }
-    if (scene.guides.horizontal) strokeSegment(scene.guides.hSeg);
-    if (scene.guides.vertical) strokeSegment(scene.guides.vSeg);
+  function strokePolyline(view, points, color, lineWidth, close) {
+    if (!points.length) return;
+    const ctx = view.ctx;
+    ctx.beginPath();
+    ctx.moveTo(view.tx(points[0].x), view.ty(points[0].y));
+    for (let i = 1; i < points.length; i++) ctx.lineTo(view.tx(points[i].x), view.ty(points[i].y));
+    if (close) ctx.closePath();
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = color;
     ctx.setLineDash([]);
+    ctx.stroke();
+  }
+
+  function drawGuides(view, scene, color, width) {
+    const ctx = view.ctx;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash([6, 4]);
+    function seg(s) {
+      ctx.beginPath();
+      ctx.moveTo(view.tx(s[0].x), view.ty(s[0].y));
+      ctx.lineTo(view.tx(s[1].x), view.ty(s[1].y));
+      ctx.stroke();
+    }
+    if (scene.guides.horizontal) seg(scene.guides.hSeg);
+    if (scene.guides.vertical) seg(scene.guides.vSeg);
+    ctx.setLineDash([]);
+  }
+
+  // ------------------------------------------------------------ Vista diseño
+  function renderCanvas(canvas, geometry) {
+    if (!canvas || !canvas.getContext) return;
+    const scene = buildScene(geometry);
+    const view = setupView(canvas, scene.bbox);
+    const ctx = view.ctx;
+    const col = view.col;
+
+    strokePolyline(view, scene.piece, col.piece, 2, true);
+    strokePolyline(view, scene.cavity, col.accent, 2, true);
+    drawGuides(view, scene, col.guide, 1);
 
     // Origen / centro
-    ctx.fillStyle = colCavity;
+    ctx.fillStyle = col.accent;
     ctx.beginPath();
-    ctx.arc(tx(0), ty(0), 3, 0, Math.PI * 2);
+    ctx.arc(view.tx(0), view.ty(0), 3, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cotas
-    const colDim = styles.getPropertyValue("--color-faint").trim() || "#6b7785";
+    // ------------------------------------------------------------- Cotas
+    const colDim = col.faint;
     function fmt(value) { return (Math.round(value * 100) / 100) + " mm"; }
-
     function fmtNum(value) { return String(Math.round(value * 100) / 100); }
 
     ctx.font = "12px system-ui, sans-serif";
@@ -114,52 +142,123 @@
 
     const bb = scene.bbox;
 
-    // Cota de ancho de la pieza (arriba)
-    const topY = ty(bb.maxY) - 14;
+    // Cota de ancho (arriba)
+    const topY = view.ty(bb.maxY) - 14;
     ctx.strokeStyle = colDim;
     ctx.fillStyle = colDim;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(tx(bb.minX), topY);
-    ctx.lineTo(tx(bb.maxX), topY);
-    ctx.moveTo(tx(bb.minX), topY - 4); ctx.lineTo(tx(bb.minX), topY + 4);
-    ctx.moveTo(tx(bb.maxX), topY - 4); ctx.lineTo(tx(bb.maxX), topY + 4);
+    ctx.moveTo(view.tx(bb.minX), topY);
+    ctx.lineTo(view.tx(bb.maxX), topY);
+    ctx.moveTo(view.tx(bb.minX), topY - 4); ctx.lineTo(view.tx(bb.minX), topY + 4);
+    ctx.moveTo(view.tx(bb.maxX), topY - 4); ctx.lineTo(view.tx(bb.maxX), topY + 4);
     ctx.stroke();
-    ctx.fillStyle = colText;
-    ctx.fillText(fmt(bb.maxX - bb.minX), cx, topY - 5);
+    ctx.fillStyle = col.text;
+    ctx.fillText(fmt(bb.maxX - bb.minX), view.cx, topY - 5);
 
-    // Cota de alto de la pieza (izquierda)
-    const leftX = tx(bb.minX) - 14;
+    // Cota de alto (izquierda)
+    const leftX = view.tx(bb.minX) - 14;
     ctx.strokeStyle = colDim;
     ctx.fillStyle = colDim;
     ctx.beginPath();
-    ctx.moveTo(leftX, ty(bb.minY));
-    ctx.lineTo(leftX, ty(bb.maxY));
-    ctx.moveTo(leftX - 4, ty(bb.minY)); ctx.lineTo(leftX + 4, ty(bb.minY));
-    ctx.moveTo(leftX - 4, ty(bb.maxY)); ctx.lineTo(leftX + 4, ty(bb.maxY));
+    ctx.moveTo(leftX, view.ty(bb.minY));
+    ctx.lineTo(leftX, view.ty(bb.maxY));
+    ctx.moveTo(leftX - 4, view.ty(bb.minY)); ctx.lineTo(leftX + 4, view.ty(bb.minY));
+    ctx.moveTo(leftX - 4, view.ty(bb.maxY)); ctx.lineTo(leftX + 4, view.ty(bb.maxY));
     ctx.stroke();
     ctx.save();
-    ctx.translate(leftX - 5, cy);
+    ctx.translate(leftX - 5, view.cy);
     ctx.rotate(-Math.PI / 2);
-    ctx.fillStyle = colText;
+    ctx.fillStyle = col.text;
     ctx.fillText(fmt(bb.maxY - bb.minY), 0, 0);
     ctx.restore();
 
-    // Cotas de la cavidad (dentro/junto a la cavidad)
+    // Cota de la cavidad
     if (scene.cavity.length) {
-      const cbb = window.BujiaTemplateGeometry.boundingBox(scene.cavity);
+      const cbb = geom.boundingBox(scene.cavity);
       const ccx = (cbb.minX + cbb.maxX) / 2;
       const ccy = (cbb.minY + cbb.maxY) / 2;
       const label = fmtNum(cbb.maxX - cbb.minX) + " × " + fmtNum(cbb.maxY - cbb.minY) + " mm";
       ctx.textBaseline = "middle";
       const tw = ctx.measureText(label).width;
-      // Fondo para que la cota se lea sobre las guías.
-      ctx.fillStyle = colBg;
-      ctx.fillRect(tx(ccx) - tw / 2 - 5, ty(ccy) - 9, tw + 10, 18);
-      ctx.fillStyle = colCavity;
-      ctx.fillText(label, tx(ccx), ty(ccy));
+      ctx.fillStyle = col.bg;
+      ctx.fillRect(view.tx(ccx) - tw / 2 - 5, view.ty(ccy) - 9, tw + 10, 18);
+      ctx.fillStyle = col.accent;
+      ctx.fillText(label, view.tx(ccx), view.ty(ccy));
       ctx.textBaseline = "alphabetic";
     }
+  }
+
+  // ------------------------------------------------ Vista de recorrido (G-code)
+  // Dibuja el recorrido real de un archivo (contorno, cavidad o guías) con la
+  // pieza como referencia, el punto de inicio y una flecha de sentido, para
+  // confirmar que el sentido del corte se conserva al rotar.
+  function renderToolpaths(canvas, geometry, paths, colorKey) {
+    if (!canvas || !canvas.getContext) return;
+    const scene = buildScene(geometry);
+
+    // Encuadre que abarca la pieza y todos los recorridos (pueden salir por
+    // fuera de la pieza debido al offset y la holgura).
+    let all = scene.piece.slice();
+    paths.forEach(function (p) { all = all.concat(p); });
+    const extent = geom.boundingBox(all.length ? all : scene.piece);
+    const view = setupView(canvas, extent);
+    const ctx = view.ctx;
+    const col = view.col;
+
+    const pathColor = colorKey === "guides" ? col.guide : (colorKey === "cavity" ? col.success : col.accent);
+
+    // Pieza y guías como referencia tenue.
+    ctx.globalAlpha = 0.35;
+    strokePolyline(view, scene.piece, col.piece, 1.5, true);
+    drawGuides(view, scene, col.faint, 1);
+    ctx.globalAlpha = 1;
+
+    // Origen
+    ctx.fillStyle = col.faint;
+    ctx.beginPath();
+    ctx.arc(view.tx(0), view.ty(0), 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    paths.forEach(function (points) {
+      if (!points.length) return;
+      const closed = points.length > 2;
+      strokePolyline(view, points, pathColor, 2, closed);
+
+      // Punto de inicio
+      ctx.fillStyle = col.success;
+      ctx.beginPath();
+      ctx.arc(view.tx(points[0].x), view.ty(points[0].y), 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flecha de sentido: del punto de inicio al siguiente distinto.
+      let next = null;
+      for (let i = 1; i < points.length; i++) {
+        if (points[i].x !== points[0].x || points[i].y !== points[0].y) { next = points[i]; break; }
+      }
+      if (next) drawArrow(view, points[0], next, pathColor);
+    });
+  }
+
+  function drawArrow(view, from, to, color) {
+    const ctx = view.ctx;
+    const x0 = view.tx(from.x);
+    const y0 = view.ty(from.y);
+    const x1 = view.tx(to.x);
+    const y1 = view.ty(to.y);
+    const angle = Math.atan2(y1 - y0, x1 - x0);
+    // Punta a corta distancia del inicio, para ver la dirección de avance.
+    const dist = 22;
+    const hx = x0 + Math.cos(angle) * dist;
+    const hy = y0 + Math.sin(angle) * dist;
+    const size = 7;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(hx, hy);
+    ctx.lineTo(hx - Math.cos(angle - 0.4) * size, hy - Math.sin(angle - 0.4) * size);
+    ctx.lineTo(hx - Math.cos(angle + 0.4) * size, hy - Math.sin(angle + 0.4) * size);
+    ctx.closePath();
+    ctx.fill();
   }
 
   // -------------------------------------------------------------------- SVG
@@ -218,6 +317,7 @@
   window.BujiaTemplatePreview = {
     buildScene: buildScene,
     renderCanvas: renderCanvas,
+    renderToolpaths: renderToolpaths,
     buildSvg: buildSvg,
   };
 }());

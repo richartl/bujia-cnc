@@ -14,14 +14,53 @@
     return direction === "conventional";
   }
 
-  // 01 Contorno: corta el perímetro exterior de la pieza por fuera de la línea.
-  function generateContourGcode(geometry, params, adaptiveRows) {
+  // -------------------------------------------------------- Recorridos (paths)
+  // Estos constructores son la única fuente de verdad: los usan tanto el
+  // generador de G-code como el preview, de modo que la vista previa muestra
+  // exactamente lo que hará cada archivo (offset por fuera, holgura, rotación
+  // y sentido incluidos).
+  //
+  // La rotación es un giro puro de cuarto de vuelta, así que conserva el
+  // sentido del recorrido (climb sigue siendo climb, sin espejo).
+  function contourToolpath(geometry, params) {
     const offset = outsideOffset(params.toolDiameter, params.clearance);
     const outerRect = geom.offsetRoundedRect(geometry.piece, offset);
-    const path = geom.rotatePath(geom.roundedRectPath(outerRect, {
+    return geom.rotatePath(geom.roundedRectPath(outerRect, {
       clockwise: clockwiseFor(params.direction),
       cornerSegments: 10,
     }), geometry.rotation);
+  }
+
+  function cavityToolpaths(geometry, params) {
+    const offset = outsideOffset(params.toolDiameter, params.clearance);
+    const boundary = geom.offsetRoundedRect(geometry.cavity, offset);
+    const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
+    return geom.concentricRings(boundary, stepover, {
+      clockwise: clockwiseFor(params.direction),
+      cornerSegments: 8,
+    }).map(function (ring) { return geom.rotatePath(ring, geometry.rotation); });
+  }
+
+  function guideSegments(geometry, params) {
+    const halfW = geometry.piece.width / 2;
+    const halfH = geometry.piece.height / 2;
+    const list = [];
+    if (params.horizontal !== false) {
+      list.push({ label: "Guia horizontal (centro)", points: geom.rotatePath([{ x: -halfW, y: 0 }, { x: halfW, y: 0 }], geometry.rotation) });
+    }
+    if (params.vertical !== false) {
+      list.push({ label: "Guia vertical (centro)", points: geom.rotatePath([{ x: 0, y: -halfH }, { x: 0, y: halfH }], geometry.rotation) });
+    }
+    return list;
+  }
+
+  function guideToolpaths(geometry, params) {
+    return guideSegments(geometry, params).map(function (segment) { return segment.points; });
+  }
+
+  // 01 Contorno: corta el perímetro exterior de la pieza por fuera de la línea.
+  function generateContourGcode(geometry, params, adaptiveRows) {
+    const path = contourToolpath(geometry, params);
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -64,13 +103,8 @@
   // 02 Cavidad: vacía la cavidad centrada con anillos concéntricos, por fuera
   // de la línea (más la holgura para copiadora).
   function generatePocketGcode(geometry, params, adaptiveRows) {
-    const offset = outsideOffset(params.toolDiameter, params.clearance);
-    const boundary = geom.offsetRoundedRect(geometry.cavity, offset);
     const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
-    const rings = geom.concentricRings(boundary, stepover, {
-      clockwise: clockwiseFor(params.direction),
-      cornerSegments: 8,
-    }).map(function (ring) { return geom.rotatePath(ring, geometry.rotation); });
+    const rings = cavityToolpaths(geometry, params);
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -116,14 +150,8 @@
   // 03 Guias: archivo independiente con líneas de centro. Las guías rotan con
   // toda la plantilla, igual que el contorno y la cavidad.
   function generateGuidesGcode(geometry, params) {
-    const halfW = geometry.piece.width / 2;
-    const halfH = geometry.piece.height / 2;
     const depth = Math.abs(params.depth);
-    const rotation = geometry.rotation;
-
-    // Segmentos en coordenadas locales, luego rotados.
-    const hSeg = geom.rotatePath([{ x: -halfW, y: 0 }, { x: halfW, y: 0 }], rotation);
-    const vSeg = geom.rotatePath([{ x: 0, y: -halfH }, { x: 0, y: halfH }], rotation);
+    const segments = guideSegments(geometry, params);
 
     const lines = core.startProgram({
       title: "03 Guias",
@@ -131,24 +159,21 @@
         "Guias de centro horizontal y vertical",
         "Fresa: " + core.clean(params.toolDiameter) + " mm",
         "Profundidad: Z-" + core.clean(depth) + " mm",
-        "Rotacion de plantilla: " + core.clean(rotation || 0) + " grados",
+        "Rotacion de plantilla: " + core.clean(geometry.rotation || 0) + " grados",
       ],
       rpm: params.rpm,
       safeZ: params.safeZ,
     });
 
-    function cutSegment(label, segment) {
+    segments.forEach(function (segment) {
       lines.push("");
-      lines.push(core.comment(label));
+      lines.push(core.comment(segment.label));
       lines.push(core.rapidZ(params.safeZ));
-      lines.push(core.rapidXY(segment[0].x, segment[0].y));
+      lines.push(core.rapidXY(segment.points[0].x, segment.points[0].y));
       lines.push(core.plunge(-depth, params.feed));
-      lines.push(core.feedXY(segment[1].x, segment[1].y, params.feed));
+      lines.push(core.feedXY(segment.points[1].x, segment.points[1].y, params.feed));
       lines.push(core.rapidZ(params.safeZ));
-    }
-
-    if (params.horizontal !== false) cutSegment("Guia horizontal (centro)", hSeg);
-    if (params.vertical !== false) cutSegment("Guia vertical (centro)", vSeg);
+    });
 
     lines.push("");
     core.endProgram(params.safeZ).forEach(function (line) { lines.push(line); });
@@ -157,6 +182,9 @@
 
   window.BujiaTemplateGcode = {
     outsideOffset: outsideOffset,
+    contourToolpath: contourToolpath,
+    cavityToolpaths: cavityToolpaths,
+    guideToolpaths: guideToolpaths,
     generateContourGcode: generateContourGcode,
     generatePocketGcode: generatePocketGcode,
     generateGuidesGcode: generateGuidesGcode,

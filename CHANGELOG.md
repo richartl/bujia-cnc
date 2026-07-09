@@ -12,6 +12,8 @@
 - Rotación de **toda la plantilla** (0/90/180/270) alrededor del centro: rota de forma conjunta contorno, cavidad, offsets, guías, previsualización, `preview.svg` y los tres archivos de G-code (rotaciones exactas de cuarto de vuelta, sin ruido de coma flotante).
 - El preview del constructor se reubica al panel derecho y queda **fijo (sticky) abajo a la derecha**, siempre visible mientras se editan los parámetros, con actualización en vivo.
 - El preview (Canvas y `preview.svg`) ahora muestra **cotas**: ancho y alto de la pieza con líneas de cota y medida de la cavidad.
+- Vista previa **por cada G-code** (Diseño / Contorno / Cavidad / Guías): muestra el recorrido real de cada archivo (con offset por fuera, holgura, rotación y sentido), punto de inicio y flecha de dirección. Los recorridos se calculan con constructores compartidos (`contourToolpath`, `cavityToolpaths`, `guideToolpaths`), única fuente de verdad para G-code y preview.
+- Verificado que al rotar la plantilla **no cambia el sentido del corte**: la rotación es un giro rígido de cuarto de vuelta (sin espejo), por lo que climb sigue siendo climb; se añadió una prueba que comprueba que el área firmada del recorrido conserva su signo en 0/90/180/270.
 - Descargas: `01_Contorno.nc`, `02_Cavidad_Humbucker.nc`, `03_Guias.nc` y `preview.svg` a escala.
 - Arquitectura reutilizable: núcleo de G-code compartido (`js/gcode/gcode-core.js`), geometría (`js/template/geometry.js`), generadores (`js/gcode/template.js`), preview (`js/template/preview.js`), UI genérica (`js/ui/template-ui.js`) y descriptores por plantilla (`templates/*.js`). Una plantilla nueva solo aporta geometría.
 - Casos de regresión en `tests/template.test.js` (geometría, offset por fuera, contorno/cavidad/guías y SVG).
