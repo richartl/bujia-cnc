@@ -18,10 +18,10 @@
   function generateContourGcode(geometry, params, adaptiveRows) {
     const offset = outsideOffset(params.toolDiameter, params.clearance);
     const outerRect = geom.offsetRoundedRect(geometry.piece, offset);
-    const path = geom.roundedRectPath(outerRect, {
+    const path = geom.rotatePath(geom.roundedRectPath(outerRect, {
       clockwise: clockwiseFor(params.direction),
       cornerSegments: 10,
-    });
+    }), geometry.rotation);
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -70,7 +70,7 @@
     const rings = geom.concentricRings(boundary, stepover, {
       clockwise: clockwiseFor(params.direction),
       cornerSegments: 8,
-    });
+    }).map(function (ring) { return geom.rotatePath(ring, geometry.rotation); });
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -113,11 +113,17 @@
     return lines.join("\n");
   }
 
-  // 03 Guias: archivo independiente con líneas de centro horizontal y vertical.
+  // 03 Guias: archivo independiente con líneas de centro. Las guías rotan con
+  // toda la plantilla, igual que el contorno y la cavidad.
   function generateGuidesGcode(geometry, params) {
     const halfW = geometry.piece.width / 2;
     const halfH = geometry.piece.height / 2;
     const depth = Math.abs(params.depth);
+    const rotation = geometry.rotation;
+
+    // Segmentos en coordenadas locales, luego rotados.
+    const hSeg = geom.rotatePath([{ x: -halfW, y: 0 }, { x: halfW, y: 0 }], rotation);
+    const vSeg = geom.rotatePath([{ x: 0, y: -halfH }, { x: 0, y: halfH }], rotation);
 
     const lines = core.startProgram({
       title: "03 Guias",
@@ -125,30 +131,24 @@
         "Guias de centro horizontal y vertical",
         "Fresa: " + core.clean(params.toolDiameter) + " mm",
         "Profundidad: Z-" + core.clean(depth) + " mm",
+        "Rotacion de plantilla: " + core.clean(rotation || 0) + " grados",
       ],
       rpm: params.rpm,
       safeZ: params.safeZ,
     });
 
-    if (params.horizontal !== false) {
+    function cutSegment(label, segment) {
       lines.push("");
-      lines.push(core.comment("Guia horizontal (centro Y=0)"));
+      lines.push(core.comment(label));
       lines.push(core.rapidZ(params.safeZ));
-      lines.push(core.rapidXY(-halfW, 0));
+      lines.push(core.rapidXY(segment[0].x, segment[0].y));
       lines.push(core.plunge(-depth, params.feed));
-      lines.push(core.feedXY(halfW, 0, params.feed));
+      lines.push(core.feedXY(segment[1].x, segment[1].y, params.feed));
       lines.push(core.rapidZ(params.safeZ));
     }
 
-    if (params.vertical !== false) {
-      lines.push("");
-      lines.push(core.comment("Guia vertical (centro X=0)"));
-      lines.push(core.rapidZ(params.safeZ));
-      lines.push(core.rapidXY(0, -halfH));
-      lines.push(core.plunge(-depth, params.feed));
-      lines.push(core.feedXY(0, halfH, params.feed));
-      lines.push(core.rapidZ(params.safeZ));
-    }
+    if (params.horizontal !== false) cutSegment("Guia horizontal (centro)", hSeg);
+    if (params.vertical !== false) cutSegment("Guia vertical (centro)", vSeg);
 
     lines.push("");
     core.endProgram(params.safeZ).forEach(function (line) { lines.push(line); });

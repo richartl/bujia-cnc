@@ -36,7 +36,10 @@
   }
 
   function buildGeometry() {
-    return descriptor.buildGeometry(geometryParams());
+    const geometry = descriptor.buildGeometry(geometryParams());
+    // Rotación de TODA la plantilla (0/90/180/270) alrededor del centro.
+    geometry.rotation = num("templateRotation") || 0;
+    return geometry;
   }
 
   function contourParams() {

@@ -79,7 +79,7 @@ Capas:
 - `js/template/preview.js`: dibujo en Canvas en vivo y construcción de `preview.svg` a escala (misma fuente de verdad).
 - `js/ui/template-ui.js`: controlador genérico dirigido por `body[data-template]`; reutiliza el componente Adaptive Passes para Contorno y Cavidad.
 
-Convenciones: origen en el centro de la pieza; corte por fuera de la línea con desplazamiento del centro de la fresa = radio + holgura (la holgura permite compensar una copiadora). Salidas: `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`.
+Convenciones: origen en el centro de la pieza; corte por fuera de la línea con desplazamiento del centro de la fresa = radio + holgura (la holgura permite compensar una copiadora). Toda la plantilla puede rotarse en pasos de 90° (0/90/180/270) alrededor del centro; la rotación se aplica de forma uniforme a los puntos de contorno, cavidad, guías, preview y G-code (`rotatePath` en `js/template/geometry.js`), por lo que todo rota igual. Salidas: `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`.
 
 ## Herramientas previstas
 

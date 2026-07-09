@@ -9,6 +9,7 @@
 - Página `pages/template-humbucker.html`: dimensiones de pieza y cavidad (centrada en el origen), corte del contorno y vaciado de la cavidad con modo Manual/Adaptive independientes, y guías de centro como archivo aparte.
 - Corte **por fuera de la línea** con parámetro de **holgura** por sección (radio de fresa + holgura), pensado para copiadora/guide bushing.
 - Previsualización 2D en **Canvas** en tiempo real (contorno, cavidad, guías, centro/origen y cotas). Origen en el centro de la pieza.
+- Rotación de **toda la plantilla** (0/90/180/270) alrededor del centro: rota de forma conjunta contorno, cavidad, offsets, guías, previsualización, `preview.svg` y los tres archivos de G-code (rotaciones exactas de cuarto de vuelta, sin ruido de coma flotante).
 - Descargas: `01_Contorno.nc`, `02_Cavidad_Humbucker.nc`, `03_Guias.nc` y `preview.svg` a escala.
 - Arquitectura reutilizable: núcleo de G-code compartido (`js/gcode/gcode-core.js`), geometría (`js/template/geometry.js`), generadores (`js/gcode/template.js`), preview (`js/template/preview.js`), UI genérica (`js/ui/template-ui.js`) y descriptores por plantilla (`templates/*.js`). Una plantilla nueva solo aporta geometría.
 - Casos de regresión en `tests/template.test.js` (geometría, offset por fuera, contorno/cavidad/guías y SVG).

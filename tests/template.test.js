@@ -89,6 +89,28 @@ assert(guides.startsWith('%') && guides.trim().endsWith('%'), 'Las guías son un
 assert(guides.includes('Guia horizontal') && guides.includes('Guia vertical'), 'Deben generarse ambas guías.');
 assert(guides.includes('G0 X-60 Y0') && guides.includes('G1 X60 Y0'), 'La guía horizontal recorre el ancho de la pieza.');
 
+// ------------------------------------------------------------------ Rotación
+assert(geom.rotatePointQuarter({ x: 60, y: 0 }, 90).x === 0 && geom.rotatePointQuarter({ x: 60, y: 0 }, 90).y === 60, 'Rotar 90° lleva (60,0) a (0,60).');
+assert(geom.rotatePointQuarter({ x: 60, y: 0 }, 180).x === -60, 'Rotar 180° lleva (60,0) a (-60,0).');
+assert(geom.rotatePointQuarter({ x: 60, y: 0 }, 270).y === -60, 'Rotar 270° lleva (60,0) a (0,-60).');
+
+const rotatedGeometry = humbucker.buildGeometry(humbucker.defaults);
+rotatedGeometry.rotation = 90;
+
+// Las guías rotan con la plantilla: la horizontal pasa a recorrer el eje Y.
+const guidesRot = gcode.generateGuidesGcode(rotatedGeometry, {
+  toolDiameter: 3, feed: 500, rpm: 12000, depth: 1, safeZ: 6, horizontal: true, vertical: true,
+});
+assert(guidesRot.includes('G0 X0 Y-60') && guidesRot.includes('G1 X0 Y60'), 'Con rotación 90° la guía horizontal recorre el eje Y.');
+assert(!guidesRot.includes('G1 X60 Y0'), 'Con rotación 90° ya no debe existir el recorrido horizontal original.');
+
+// El contorno rotado difiere del sin rotar.
+const contourRot = gcode.generateContourGcode(rotatedGeometry, {
+  mode: 'manual', toolDiameter: 6, clearance: 0, passes: 4, finalDepth: 12,
+  feed: 800, rpm: 12000, plungeFeed: 200, safeZ: 6, direction: 'climb',
+}, null);
+assert(contourRot !== contour, 'El contorno rotado 90° debe diferir del contorno sin rotar.');
+
 // ---------------------------------------------------------------------- SVG
 const svg = preview.buildSvg(geometry);
 assert(svg.includes('<svg') && svg.includes('viewBox'), 'El SVG debe tener raíz y viewBox.');

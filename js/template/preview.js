@@ -4,10 +4,18 @@
   // Construye la escena 2D (en mm) a partir de la geometría. Es la única
   // fuente de verdad para el Canvas y para el SVG.
   function buildScene(geometry) {
-    const piece = geom.roundedRectPath(geometry.piece, { cornerSegments: 16 });
-    const cavity = geom.roundedRectPath(geometry.cavity, { cornerSegments: 16 });
+    const rotation = geometry.rotation || 0;
+    const piece = geom.rotatePath(geom.roundedRectPath(geometry.piece, { cornerSegments: 16 }), rotation);
+    const cavity = geom.rotatePath(geom.roundedRectPath(geometry.cavity, { cornerSegments: 16 }), rotation);
     const halfW = geometry.piece.width / 2;
     const halfH = geometry.piece.height / 2;
+
+    // Las guías de centro rotan con toda la plantilla.
+    const hSeg = geom.rotatePath([{ x: -halfW, y: 0 }, { x: halfW, y: 0 }], rotation);
+    const vSeg = geom.rotatePath([{ x: 0, y: -halfH }, { x: 0, y: halfH }], rotation);
+
+    const fallback = [{ x: -halfW, y: -halfH }, { x: halfW, y: halfH }];
+    const bbox = geom.boundingBox(piece.length ? piece : fallback);
 
     return {
       piece: piece,
@@ -15,11 +23,14 @@
       guides: {
         horizontal: geometry.guides.horizontal !== false,
         vertical: geometry.guides.vertical !== false,
-        halfW: halfW,
-        halfH: halfH,
+        hSeg: hSeg,
+        vSeg: vSeg,
       },
-      bbox: geom.boundingBox(piece.length ? piece : [{ x: -halfW, y: -halfH }, { x: halfW, y: halfH }]),
-      dims: { width: geometry.piece.width, height: geometry.piece.height },
+      bbox: bbox,
+      dims: {
+        width: bbox.maxX - bbox.minX,
+        height: bbox.maxY - bbox.minY,
+      },
     };
   }
 
@@ -71,22 +82,18 @@
     strokePath(scene.piece, colPiece, 2);
     strokePath(scene.cavity, colCavity, 2);
 
-    // Guías de centro
+    // Guías de centro (segmentos ya rotados)
     ctx.strokeStyle = colGuide;
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 4]);
-    if (scene.guides.horizontal) {
+    function strokeSegment(segment) {
       ctx.beginPath();
-      ctx.moveTo(tx(-scene.guides.halfW), ty(0));
-      ctx.lineTo(tx(scene.guides.halfW), ty(0));
+      ctx.moveTo(tx(segment[0].x), ty(segment[0].y));
+      ctx.lineTo(tx(segment[1].x), ty(segment[1].y));
       ctx.stroke();
     }
-    if (scene.guides.vertical) {
-      ctx.beginPath();
-      ctx.moveTo(tx(0), ty(-scene.guides.halfH));
-      ctx.lineTo(tx(0), ty(scene.guides.halfH));
-      ctx.stroke();
-    }
+    if (scene.guides.horizontal) strokeSegment(scene.guides.hSeg);
+    if (scene.guides.vertical) strokeSegment(scene.guides.vSeg);
     ctx.setLineDash([]);
 
     // Origen / centro
@@ -123,8 +130,8 @@
       }).join(" ") + " Z";
     }
 
-    const halfW = scene.guides.halfW;
-    const halfH = scene.guides.halfH;
+    const hSeg = scene.guides.hSeg;
+    const vSeg = scene.guides.vSeg;
     const parts = [];
 
     parts.push("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -136,8 +143,8 @@
     if (scene.piece.length) parts.push("<path d=\"" + pathData(scene.piece) + "\" stroke=\"#1f2933\"/>");
     if (scene.cavity.length) parts.push("<path d=\"" + pathData(scene.cavity) + "\" stroke=\"#2563eb\"/>");
 
-    if (scene.guides.horizontal) parts.push("<line x1=\"" + (-halfW) + "\" y1=\"0\" x2=\"" + halfW + "\" y2=\"0\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
-    if (scene.guides.vertical) parts.push("<line x1=\"0\" y1=\"" + (-halfH) + "\" x2=\"0\" y2=\"" + halfH + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
+    if (scene.guides.horizontal) parts.push("<line x1=\"" + hSeg[0].x + "\" y1=\"" + hSeg[0].y + "\" x2=\"" + hSeg[1].x + "\" y2=\"" + hSeg[1].y + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
+    if (scene.guides.vertical) parts.push("<line x1=\"" + vSeg[0].x + "\" y1=\"" + vSeg[0].y + "\" x2=\"" + vSeg[1].x + "\" y2=\"" + vSeg[1].y + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
 
     // Cruz de centro / origen
     parts.push("<circle cx=\"0\" cy=\"0\" r=\"1.2\" fill=\"#2563eb\" stroke=\"none\"/>");

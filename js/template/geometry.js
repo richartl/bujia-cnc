@@ -144,6 +144,24 @@
     return plan;
   }
 
+  // Rotación exacta de un punto en múltiplos de 90° alrededor del origen
+  // (centro de la pieza). Se usan valores exactos para no introducir ruido de
+  // coma flotante en el G-code.
+  function rotatePointQuarter(point, angle) {
+    const a = ((Math.round(angle / 90) * 90) % 360 + 360) % 360;
+    if (a === 90) return { x: -point.y, y: point.x };
+    if (a === 180) return { x: -point.x, y: -point.y };
+    if (a === 270) return { x: point.y, y: -point.x };
+    return { x: point.x, y: point.y };
+  }
+
+  // Rota una polilínea completa. Devuelve el mismo arreglo si el ángulo es 0.
+  function rotatePath(points, angle) {
+    const a = ((Math.round((angle || 0) / 90) * 90) % 360 + 360) % 360;
+    if (a === 0) return points;
+    return points.map(function (point) { return rotatePointQuarter(point, a); });
+  }
+
   window.BujiaTemplateGeometry = {
     offsetRoundedRect: offsetRoundedRect,
     roundedRectPath: roundedRectPath,
@@ -151,5 +169,7 @@
     concentricRings: concentricRings,
     depthPlan: depthPlan,
     clamp: clamp,
+    rotatePointQuarter: rotatePointQuarter,
+    rotatePath: rotatePath,
   };
 }());
