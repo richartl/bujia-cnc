@@ -1,26 +1,24 @@
 (function () {
-  // Descriptor de la plantilla Humbucker. Para agregar una plantilla nueva se
-  // crea otro archivo como este (defaults + buildGeometry) y se marca "stable"
-  // en templates/registry.js. La interfaz, el preview y el generador no cambian.
+  // Descriptor de la plantilla Soapbar. Generado siguiendo el mismo
+  // patron que templates/humbucker.js: defaults + buildGeometry. La interfaz,
+  // el preview y el generador de G-code se reutilizan sin cambios.
 
   const defaults = {
     // Pieza / MDF exterior
-    outerW: 120,
-    outerH: 150,
+    outerW: 130,
+    outerH: 70,
     thickness: 12,
     margin: 20,
     outerRadius: 6,
     // Cavidad
-    cavW: 40,
-    cavH: 72,
-    cavRadius: 3,
+    cavW: 89,
+    cavH: 38,
+    cavRadius: 9,
     cavOffsetX: 0,
     cavOffsetY: 0,
     cavRotation: 0,
   };
 
-  // Convierte los valores del formulario en geometría (origen = centro).
-  // La rotación se acepta como parámetro pero todavía no se aplica.
   function buildGeometry(p) {
     return {
       piece: {
@@ -45,11 +43,11 @@
   }
 
   window.BujiaTemplates = window.BujiaTemplates || {};
-  window.BujiaTemplates.humbucker = {
-    id: "humbucker",
-    title: "Humbucker",
-    category: "Pastillas / Guitarra",
-    description: "Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).",
+  window.BujiaTemplates["soapbar-bass"] = {
+    id: "soapbar-bass",
+    title: "Soapbar",
+    category: "Pastillas / Bajo",
+    description: "Ajusta las dimensiones, revisa la previsualizacion y descarga los tres archivos de G-code mas el <code>preview.svg</code>. El corte va por fuera de la linea; la holgura anade separacion extra (por ejemplo para copiadora). Soapbar de bajo (formato EMG), aprox. 89 x 38 mm. Medidas aproximadas basadas en referencias de fabricantes y luthieria; confirma con tu pastilla real antes de cortar.",
     defaults: defaults,
     buildGeometry: buildGeometry,
   };

@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bujia CNC — Plantilla Humbucker</title>
+  <title>Bujia CNC — Plantilla Precision</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/forms.css">
   <link rel="stylesheet" href="../css/template.css">
 </head>
-<body data-tool="templates" data-shell-base="../" data-template="humbucker">
+<body data-tool="templates" data-shell-base="../" data-template="precision-bass">
   <div class="app">
     <header class="app__topbar">
       <div class="brand">
@@ -16,7 +16,7 @@
         <span>Bujia CNC</span>
       </div>
       <div class="topbar__meta">
-        <span class="topbar__chip"><strong>Plantilla:</strong>&nbsp;<span data-bind="topbarTool">Humbucker</span></span>
+        <span class="topbar__chip"><strong>Plantilla:</strong>&nbsp;<span data-bind="topbarTool">Precision</span></span>
         <span class="topbar__chip">Origen = centro de la pieza</span>
       </div>
     </header>
@@ -26,8 +26,8 @@
 
       <main class="app__main">
         <div class="page-head">
-          <h1 data-bind="pageTitle">Plantilla Humbucker</h1>
-          <p data-bind="pageDescription">Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).</p>
+          <h1 data-bind="pageTitle">Plantilla Precision</h1>
+          <p data-bind="pageDescription">Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>.</p>
         </div>
 
         <section class="card collapsible" id="gcodePreviewsCard">
@@ -43,7 +43,7 @@
                 <textarea id="codeContour" class="gcode-output" readonly spellcheck="false" aria-label="Código de 01_Contorno.nc"></textarea>
               </figure>
               <figure class="gcode-code">
-                <figcaption><span data-bind="cavityFileName">02_Cavidad_Humbucker.nc</span><span class="gcode-lines muted" id="linesCavity"></span></figcaption>
+                <figcaption><span data-bind="cavityFileName">02_Cavidad_Precision.nc</span><span class="gcode-lines muted" id="linesCavity"></span></figcaption>
                 <textarea id="codeCavity" class="gcode-output" readonly spellcheck="false" aria-label="Código del archivo de cavidad"></textarea>
               </figure>
               <figure class="gcode-code">
@@ -54,7 +54,7 @@
           </div>
         </section>
 
-        <form class="tool-form" aria-label="Formulario plantilla Humbucker">
+        <form class="tool-form" aria-label="Formulario plantilla Precision">
           <div class="form-group">
             <div class="form-group__title">Orientación de la plantilla</div>
             <div class="form-grid">
@@ -295,7 +295,7 @@
           <button id="downloadAll" type="button" class="btn btn--primary btn--block">Generar y descargar todo</button>
           <div class="download-list" style="margin-top: var(--space-sm);">
             <button id="downloadContour" type="button" class="btn">01 Contorno<span class="download-file">&nbsp;· 01_Contorno.nc</span></button>
-            <button id="downloadCavity" type="button" class="btn">02 Cavidad<span class="download-file">&nbsp;· <span data-bind="cavityFileName">02_Cavidad_Humbucker.nc</span></span></button>
+            <button id="downloadCavity" type="button" class="btn">02 Cavidad<span class="download-file">&nbsp;· <span data-bind="cavityFileName">02_Cavidad_Precision.nc</span></span></button>
             <button id="downloadGuides" type="button" class="btn">03 Guías<span class="download-file">&nbsp;· 03_Guias.nc</span></button>
             <button id="downloadSvg" type="button" class="btn">Preview<span class="download-file">&nbsp;· preview.svg</span></button>
           </div>
@@ -323,7 +323,7 @@
     </div>
 
     <footer class="app__footer">
-      <span data-bind="footerTool">Plantilla Humbucker</span>
+      <span data-bind="footerTool">Plantilla Precision</span>
       <span class="spacer"></span>
       <span data-shell-version>v0.2.0</span>
     </footer>
@@ -337,7 +337,7 @@
   <script src="../js/gcode/gcode-core.js"></script>
   <script src="../js/template/preview.js"></script>
   <script src="../js/gcode/template.js"></script>
-  <script src="../templates/humbucker.js"></script>
+  <script src="../templates/precision-bass.js"></script>
   <script src="../js/ui/template-ui.js"></script>
 </body>
 </html>

@@ -1,12 +1,26 @@
 (function () {
   const geom = window.BujiaTemplateGeometry;
 
+  // Una plantilla puede tener una o varias cavidades (p. ej. Precision Bass de
+  // bobina partida) y opcionalmente relieves de orejas de montaje (p. ej.
+  // Humbucker con orejas). Se normalizan aquí para que el resto del preview
+  // no necesite distinguir casos.
+  function cavityRectsOf(geometry) {
+    if (Array.isArray(geometry.cavities) && geometry.cavities.length) return geometry.cavities;
+    return geometry.cavity ? [geometry.cavity] : [];
+  }
+
   // Construye la escena 2D (en mm) a partir de la geometría. Es la única
   // fuente de verdad para el Canvas y para el SVG.
   function buildScene(geometry) {
     const rotation = geometry.rotation || 0;
     const piece = geom.rotatePath(geom.roundedRectPath(geometry.piece, { cornerSegments: 16 }), rotation);
-    const cavity = geom.rotatePath(geom.roundedRectPath(geometry.cavity, { cornerSegments: 16 }), rotation);
+    const cavities = cavityRectsOf(geometry).map(function (rect) {
+      return geom.rotatePath(geom.roundedRectPath(rect, { cornerSegments: 16 }), rotation);
+    });
+    const earPockets = (geometry.earPockets || []).map(function (rect) {
+      return geom.rotatePath(geom.roundedRectPath(rect, { cornerSegments: 12 }), rotation);
+    });
     const halfW = geometry.piece.width / 2;
     const halfH = geometry.piece.height / 2;
 
@@ -19,7 +33,8 @@
 
     return {
       piece: piece,
-      cavity: cavity,
+      cavities: cavities,
+      earPockets: earPockets,
       guides: {
         horizontal: geometry.guides.horizontal !== false,
         vertical: geometry.guides.vertical !== false,
@@ -45,6 +60,7 @@
       text: v("--color-muted", "#8b98a6"),
       faint: v("--color-faint", "#6b7785"),
       success: v("--color-success", "#3fb765"),
+      ear: v("--color-danger", "#f2665a"),
     };
   }
 
@@ -122,7 +138,8 @@
     const col = view.col;
 
     strokePolyline(view, scene.piece, col.piece, 2, true);
-    strokePolyline(view, scene.cavity, col.accent, 2, true);
+    scene.cavities.forEach(function (cavity) { strokePolyline(view, cavity, col.accent, 2, true); });
+    scene.earPockets.forEach(function (ear) { strokePolyline(view, ear, col.ear, 1.5, true); });
     drawGuides(view, scene, col.guide, 1);
 
     // Origen / centro
@@ -173,20 +190,21 @@
     ctx.fillText(fmt(bb.maxY - bb.minY), 0, 0);
     ctx.restore();
 
-    // Cota de la cavidad
-    if (scene.cavity.length) {
-      const cbb = geom.boundingBox(scene.cavity);
+    // Cota de cada cavidad
+    ctx.textBaseline = "middle";
+    scene.cavities.forEach(function (cavity) {
+      if (!cavity.length) return;
+      const cbb = geom.boundingBox(cavity);
       const ccx = (cbb.minX + cbb.maxX) / 2;
       const ccy = (cbb.minY + cbb.maxY) / 2;
       const label = fmtNum(cbb.maxX - cbb.minX) + " × " + fmtNum(cbb.maxY - cbb.minY) + " mm";
-      ctx.textBaseline = "middle";
       const tw = ctx.measureText(label).width;
       ctx.fillStyle = col.bg;
       ctx.fillRect(view.tx(ccx) - tw / 2 - 5, view.ty(ccy) - 9, tw + 10, 18);
       ctx.fillStyle = col.accent;
       ctx.fillText(label, view.tx(ccx), view.ty(ccy));
-      ctx.textBaseline = "alphabetic";
-    }
+    });
+    ctx.textBaseline = "alphabetic";
   }
 
   // ------------------------------------------------ Vista de recorrido (G-code)
@@ -288,7 +306,12 @@
     parts.push("<rect x=\"" + (-vbW / 2) + "\" y=\"" + (-vbH / 2) + "\" width=\"" + vbW + "\" height=\"" + vbH + "\" fill=\"#ffffff\" stroke=\"none\"/>");
 
     if (scene.piece.length) parts.push("<path d=\"" + pathData(scene.piece) + "\" stroke=\"#1f2933\"/>");
-    if (scene.cavity.length) parts.push("<path d=\"" + pathData(scene.cavity) + "\" stroke=\"#2563eb\"/>");
+    scene.cavities.forEach(function (cavity) {
+      if (cavity.length) parts.push("<path d=\"" + pathData(cavity) + "\" stroke=\"#2563eb\"/>");
+    });
+    scene.earPockets.forEach(function (ear) {
+      if (ear.length) parts.push("<path d=\"" + pathData(ear) + "\" stroke=\"#dc4c3f\"/>");
+    });
 
     if (scene.guides.horizontal) parts.push("<line x1=\"" + hSeg[0].x + "\" y1=\"" + hSeg[0].y + "\" x2=\"" + hSeg[1].x + "\" y2=\"" + hSeg[1].y + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
     if (scene.guides.vertical) parts.push("<line x1=\"" + vSeg[0].x + "\" y1=\"" + vSeg[0].y + "\" x2=\"" + vSeg[1].x + "\" y2=\"" + vSeg[1].y + "\" stroke=\"#e0a23a\" stroke-dasharray=\"3 2\"/>");
@@ -301,14 +324,15 @@
     parts.push("<text x=\"0\" y=\"" + (-h / 2 - pad / 3) + "\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.05) + "\" fill=\"#1f2933\" text-anchor=\"middle\">" + scene.dims.width + " mm</text>");
     parts.push("<text x=\"" + (-w / 2 - pad / 3) + "\" y=\"0\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.05) + "\" fill=\"#1f2933\" text-anchor=\"middle\" transform=\"rotate(-90 " + (-w / 2 - pad / 3) + " 0)\">" + scene.dims.height + " mm</text>");
 
-    // Cota de la cavidad (texto en su centro; se niega la Y por el flip).
-    if (scene.cavity.length) {
-      const cbb = geom.boundingBox(scene.cavity);
+    // Cota de cada cavidad (texto en su centro; se niega la Y por el flip).
+    scene.cavities.forEach(function (cavity) {
+      if (!cavity.length) return;
+      const cbb = geom.boundingBox(cavity);
       const ccx = (cbb.minX + cbb.maxX) / 2;
       const ccy = (cbb.minY + cbb.maxY) / 2;
       const cavLabel = (Math.round((cbb.maxX - cbb.minX) * 100) / 100) + " × " + (Math.round((cbb.maxY - cbb.minY) * 100) / 100) + " mm";
       parts.push("<text x=\"" + ccx + "\" y=\"" + (-ccy) + "\" font-family=\"sans-serif\" font-size=\"" + (Math.min(w, h) * 0.045) + "\" fill=\"#2563eb\" text-anchor=\"middle\" dominant-baseline=\"middle\">" + cavLabel + "</text>");
-    }
+    });
 
     parts.push("</svg>");
     return parts.join("\n");

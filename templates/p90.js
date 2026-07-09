@@ -1,26 +1,24 @@
 (function () {
-  // Descriptor de la plantilla Humbucker. Para agregar una plantilla nueva se
-  // crea otro archivo como este (defaults + buildGeometry) y se marca "stable"
-  // en templates/registry.js. La interfaz, el preview y el generador no cambian.
+  // Descriptor de la plantilla P90. Generado siguiendo el mismo
+  // patron que templates/humbucker.js: defaults + buildGeometry. La interfaz,
+  // el preview y el generador de G-code se reutilizan sin cambios.
 
   const defaults = {
     // Pieza / MDF exterior
-    outerW: 120,
-    outerH: 150,
+    outerW: 130,
+    outerH: 70,
     thickness: 12,
     margin: 20,
     outerRadius: 6,
     // Cavidad
-    cavW: 40,
-    cavH: 72,
-    cavRadius: 3,
+    cavW: 88.5,
+    cavH: 37,
+    cavRadius: 12.7,
     cavOffsetX: 0,
     cavOffsetY: 0,
     cavRotation: 0,
   };
 
-  // Convierte los valores del formulario en geometría (origen = centro).
-  // La rotación se acepta como parámetro pero todavía no se aplica.
   function buildGeometry(p) {
     return {
       piece: {
@@ -45,11 +43,11 @@
   }
 
   window.BujiaTemplates = window.BujiaTemplates || {};
-  window.BujiaTemplates.humbucker = {
-    id: "humbucker",
-    title: "Humbucker",
+  window.BujiaTemplates["p90"] = {
+    id: "p90",
+    title: "P90",
     category: "Pastillas / Guitarra",
-    description: "Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).",
+    description: "Ajusta las dimensiones, revisa la previsualizacion y descarga los tres archivos de G-code mas el <code>preview.svg</code>. El corte va por fuera de la linea; la holgura anade separacion extra (por ejemplo para copiadora). P90 soapbar, aprox. 88.5 x 37 mm, esquinas de radio 1/2\" (StewMac). Medidas aproximadas basadas en referencias de fabricantes y luthieria; confirma con tu pastilla real antes de cortar.",
     defaults: defaults,
     buildGeometry: buildGeometry,
   };

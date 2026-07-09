@@ -31,14 +31,44 @@
     }), geometry.rotation);
   }
 
-  function cavityToolpaths(geometry, params) {
-    const offset = outsideOffset(params.toolDiameter, params.clearance);
-    const boundary = geom.offsetRoundedRect(geometry.cavity, offset);
-    const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
+  // Una plantilla puede tener una sola cavidad (geometry.cavity) o varias
+  // (geometry.cavities, p. ej. Precision Bass de bobina partida). Ambas formas
+  // conviven: si no hay "cavities" se usa "cavity" como lista de un elemento,
+  // así las plantillas existentes no cambian su comportamiento.
+  function cavityRectsOf(geometry) {
+    if (Array.isArray(geometry.cavities) && geometry.cavities.length) return geometry.cavities;
+    return geometry.cavity ? [geometry.cavity] : [];
+  }
+
+  function ringsForRect(rect, offset, stepover, params, geometry) {
+    const boundary = geom.offsetRoundedRect(rect, offset);
     return geom.concentricRings(boundary, stepover, {
       clockwise: clockwiseFor(params.direction),
       cornerSegments: 8,
     }).map(function (ring) { return geom.rotatePath(ring, geometry.rotation); });
+  }
+
+  function cavityToolpaths(geometry, params) {
+    const offset = outsideOffset(params.toolDiameter, params.clearance);
+    const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
+    let rings = [];
+    cavityRectsOf(geometry).forEach(function (rect) {
+      rings = rings.concat(ringsForRect(rect, offset, stepover, params, geometry));
+    });
+    return rings;
+  }
+
+  // Relieves poco profundos para las orejas de montaje (p. ej. Humbucker con
+  // orejas). Solo existen si la plantilla define geometry.earPockets.
+  function earPocketToolpaths(geometry, params) {
+    if (!Array.isArray(geometry.earPockets) || !geometry.earPockets.length) return [];
+    const offset = outsideOffset(params.toolDiameter, params.clearance);
+    const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
+    let rings = [];
+    geometry.earPockets.forEach(function (rect) {
+      rings = rings.concat(ringsForRect(rect, offset, stepover, params, geometry));
+    });
+    return rings;
   }
 
   function guideSegments(geometry, params) {
@@ -105,6 +135,8 @@
   function generatePocketGcode(geometry, params, adaptiveRows) {
     const stepover = params.stepover > 0 ? params.stepover : Math.abs(params.toolDiameter) * 0.4;
     const rings = cavityToolpaths(geometry, params);
+    const cavityCount = cavityRectsOf(geometry).length;
+    const earRings = earPocketToolpaths(geometry, params);
 
     const plan = geom.depthPlan({
       mode: params.mode,
@@ -115,14 +147,23 @@
       rpm: params.rpm,
     });
 
+    // El texto exacto se conserva para el caso de una sola cavidad (plantillas
+    // existentes, p. ej. Humbucker) para no cambiar el G-code ya aprobado.
+    const description = [
+      "Vaciado de cavidad por fuera de la linea",
+      "Fresa: " + core.clean(params.toolDiameter) + " mm, holgura: " + core.clean(params.clearance) + " mm, stepover: " + core.clean(stepover) + " mm",
+    ];
+    if (cavityCount > 1) {
+      description.push("Cavidades: " + cavityCount + " (bobina partida), modo: " + params.mode);
+    } else {
+      description.push("Cavidad: " + core.clean(geometry.cavity.width) + " x " + core.clean(geometry.cavity.height) + " mm");
+      description.push("Centro: X" + core.clean(geometry.cavity.cx) + " Y" + core.clean(geometry.cavity.cy) + ", modo: " + params.mode);
+    }
+    if (earRings.length) description.push("Incluye orejas de montaje, profundidad Z-" + core.clean(params.earDepth) + " mm");
+
     const lines = core.startProgram({
       title: "02 Cavidad",
-      description: [
-        "Vaciado de cavidad por fuera de la linea",
-        "Fresa: " + core.clean(params.toolDiameter) + " mm, holgura: " + core.clean(params.clearance) + " mm, stepover: " + core.clean(stepover) + " mm",
-        "Cavidad: " + core.clean(geometry.cavity.width) + " x " + core.clean(geometry.cavity.height) + " mm",
-        "Centro: X" + core.clean(geometry.cavity.cx) + " Y" + core.clean(geometry.cavity.cy) + ", modo: " + params.mode,
-      ],
+      description: description,
       rpm: plan.length ? plan[0].rpm : params.rpm,
       safeZ: params.safeZ,
     });
@@ -141,6 +182,24 @@
         }).forEach(function (line) { lines.push(line); });
       });
     });
+
+    // Orejas de montaje: relieve superficial en una sola pasada, poco
+    // profundo, independiente del plan de profundidad de la cavidad principal.
+    if (earRings.length && params.earDepth > 0) {
+      const earDepth = Math.min(Math.abs(params.earDepth), Math.abs(params.finalDepth || params.earDepth));
+      lines.push("");
+      lines.push(core.comment("OREJAS DE MONTAJE - Z-" + core.clean(earDepth)));
+      if (params.mode === "adaptive") lines.push("M3 S" + core.clean(params.rpm));
+      earRings.forEach(function (ring, ringIndex) {
+        lines.push(core.comment("Oreja, anillo " + (ringIndex + 1) + " de " + earRings.length));
+        core.cutClosedPath(ring, {
+          safeZ: params.safeZ,
+          depth: earDepth,
+          feed: params.feed,
+          plungeFeed: params.plungeFeed || params.feed,
+        }).forEach(function (line) { lines.push(line); });
+      });
+    }
 
     lines.push("");
     core.endProgram(params.safeZ).forEach(function (line) { lines.push(line); });
@@ -184,6 +243,7 @@
     outsideOffset: outsideOffset,
     contourToolpath: contourToolpath,
     cavityToolpaths: cavityToolpaths,
+    earPocketToolpaths: earPocketToolpaths,
     guideToolpaths: guideToolpaths,
     generateContourGcode: generateContourGcode,
     generatePocketGcode: generatePocketGcode,

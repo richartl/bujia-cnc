@@ -1,26 +1,24 @@
 (function () {
-  // Descriptor de la plantilla Humbucker. Para agregar una plantilla nueva se
-  // crea otro archivo como este (defaults + buildGeometry) y se marca "stable"
-  // en templates/registry.js. La interfaz, el preview y el generador no cambian.
+  // Descriptor de la plantilla Mini Humbucker. Generado siguiendo el mismo
+  // patron que templates/humbucker.js: defaults + buildGeometry. La interfaz,
+  // el preview y el generador de G-code se reutilizan sin cambios.
 
   const defaults = {
     // Pieza / MDF exterior
-    outerW: 120,
-    outerH: 150,
+    outerW: 110,
+    outerH: 60,
     thickness: 12,
     margin: 20,
     outerRadius: 6,
     // Cavidad
-    cavW: 40,
-    cavH: 72,
-    cavRadius: 3,
+    cavW: 66.7,
+    cavH: 28.6,
+    cavRadius: 6,
     cavOffsetX: 0,
     cavOffsetY: 0,
     cavRotation: 0,
   };
 
-  // Convierte los valores del formulario en geometría (origen = centro).
-  // La rotación se acepta como parámetro pero todavía no se aplica.
   function buildGeometry(p) {
     return {
       piece: {
@@ -45,11 +43,11 @@
   }
 
   window.BujiaTemplates = window.BujiaTemplates || {};
-  window.BujiaTemplates.humbucker = {
-    id: "humbucker",
-    title: "Humbucker",
+  window.BujiaTemplates["mini-humbucker"] = {
+    id: "mini-humbucker",
+    title: "Mini Humbucker",
     category: "Pastillas / Guitarra",
-    description: "Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).",
+    description: "Ajusta las dimensiones, revisa la previsualizacion y descarga los tres archivos de G-code mas el <code>preview.svg</code>. El corte va por fuera de la linea; la holgura anade separacion extra (por ejemplo para copiadora). Mini humbucker / Firebird, aprox. 66.7 x 28.6 mm (2-5/8 x 1-1/8\"). Medidas aproximadas basadas en referencias de fabricantes y luthieria; confirma con tu pastilla real antes de cortar.",
     defaults: defaults,
     buildGeometry: buildGeometry,
   };

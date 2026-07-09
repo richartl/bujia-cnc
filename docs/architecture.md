@@ -81,6 +81,21 @@ Capas:
 
 Convenciones: origen en el centro de la pieza; corte por fuera de la línea con desplazamiento del centro de la fresa = radio + holgura (la holgura permite compensar una copiadora). Toda la plantilla puede rotarse en pasos de 90° (0/90/180/270) alrededor del centro; la rotación se aplica de forma uniforme a los puntos de contorno, cavidad, guías, preview y G-code (`rotatePath` en `js/template/geometry.js`), por lo que todo rota igual. Salidas: `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`.
 
+### Catálogo de plantillas de pastillas
+
+Cada plantilla nueva de pastilla (guitarra o bajo) debe seguir exactamente el patrón de `templates/humbucker.js`:
+
+1. Crear `templates/<id>.js` con `id`, `title`, `category`, `description` (HTML simple, texto fijo definido por nosotros) y `defaults` + `buildGeometry(params)`.
+2. Crear `pages/template-<id>.html` como copia del esqueleto genérico (mismo HTML que `template-humbucker.html`, sin duplicar lógica) cambiando únicamente `body[data-template]`, el `<title>` inicial y el `<script src="../templates/<id>.js">`. Todo el resto del texto visible (título, descripción, chip, pie de página, nombre del archivo de cavidad) se rellena en tiempo de carga desde el descriptor mediante `[data-bind]` y `applyDescriptorText()` en `js/ui/template-ui.js`.
+3. Marcar la hoja correspondiente como `stable` con su `page` en `templates/registry.js`.
+4. Añadir el caso al smoke test `tests/template-catalog.test.js` (se detecta automáticamente si el registry apunta a un descriptor válido).
+
+**Geometría con varias cavidades.** Una plantilla puede tener una sola cavidad (`geometry.cavity`) o varias (`geometry.cavities`, un arreglo), por ejemplo Precision Bass con su bobina partida. El generador de G-code y el preview normalizan ambas formas (`cavityRectsOf()` en `js/gcode/template.js` y `js/template/preview.js`); si no hay `cavities`, se trata `cavity` como una lista de un elemento, así que las plantillas existentes no cambian su salida.
+
+**Orejas de montaje.** Una plantilla puede definir `geometry.earPockets` (arreglo de rectángulos) para relieves superficiales adicionales, como las orejas de un humbucker de montaje en madera. Se cortan en una sola pasada, a una profundidad fija (`params.earDepth`) independiente del plan de profundidad de la cavidad principal, y se agregan al mismo archivo `02_Cavidad_<Plantilla>.nc` después del vaciado principal. El campo de formulario correspondiente solo se muestra si el descriptor define `hasEars: true` (mecanismo genérico `data-requires` en `js/ui/template-ui.js`, reutilizable para futuros campos opcionales por plantilla).
+
+**Medidas de referencia.** Las dimensiones de cavidad de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería, documentadas en el campo `description` de cada descriptor. No sustituyen la verificación contra la pastilla real antes de cortar.
+
 ## Herramientas previstas
 
 - Surfacing.

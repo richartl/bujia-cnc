@@ -4,8 +4,15 @@
 
 ### Added
 
+- Poblado el catálogo de **Plantillas de pastillas** con 14 plantillas nuevas siguiendo el mismo patrón que Humbucker (descriptor `templates/<id>.js` + página dedicada, sin cambiar interfaz, lógica ni generador):
+  - Guitarra: Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, **Humbucker (con orejas)**, Personalizada.
+  - Bajo: Jazz Bass, Precision, Music Man, Soapbar, EMG35, EMG40, Personalizada.
+  - Las medidas de cavidad son aproximaciones basadas en referencias públicas de fabricantes y luthiería (StewMac, Fralin, EMG, foros especializados); cada plantilla incluye una nota de advertencia y se recomienda verificar contra la pastilla real antes de cortar.
+- **Humbucker con orejas**: nueva página con la misma cavidad principal que el Humbucker estándar, más dos relieves superficiales para las orejas de montaje, cortados en una sola pasada a una profundidad independiente (nuevo campo «Profundidad de orejas», solo visible en esta plantilla).
+- **Precision Bass**: primera plantilla con **bobina partida** (dos cavidades independientes desfasadas). Se generalizó el generador y el preview para aceptar `geometry.cavities` (varias cavidades) además de `geometry.cavity` (una sola), sin cambiar el comportamiento de las plantillas existentes.
+- Sistema de **texto genérico por descriptor**: título, descripción, chip de la barra superior, pie de página y nombre del archivo de cavidad se rellenan en tiempo de carga desde el descriptor de la plantilla (`data-bind` + `js/ui/template-ui.js`), de modo que el HTML de cada página de pastilla es idéntico salvo el identificador de plantilla.
 - Nuevo módulo **Plantillas / Template Builder** (🧩) totalmente independiente de Surfacing y Cantos. El usuario no dibuja: elige una plantilla, ajusta dimensiones y descarga el G-code.
-- Página `pages/templates.html` con el árbol de categorías (Pastillas, Cavidades, Neck Pocket, Pickguards, Puentes, Jack, Controles, Personalizadas). Solo *Pastillas › Guitarra › Humbucker* está disponible; el resto aparece como «Próximamente».
+- Página `pages/templates.html` con el árbol de categorías (Pastillas, Cavidades, Neck Pocket, Pickguards, Puentes, Jack, Controles, Personalizadas). Ahora todas las pastillas de guitarra y bajo están disponibles; el resto de categorías (Cavidades de cuerpo, Neck Pocket, Pickguards, Puentes, Jack, Controles) sigue como «Próximamente».
 - Página `pages/template-humbucker.html`: dimensiones de pieza y cavidad (centrada en el origen), corte del contorno y vaciado de la cavidad con modo Manual/Adaptive independientes, y guías de centro como archivo aparte.
 - Corte **por fuera de la línea** con parámetro de **holgura** por sección (radio de fresa + holgura), pensado para copiadora/guide bushing.
 - Previsualización 2D en **Canvas** en tiempo real (contorno, cavidad, guías, centro/origen y cotas). Origen en el centro de la pieza.
@@ -18,6 +25,11 @@
 - Descargas: `01_Contorno.nc`, `02_Cavidad_Humbucker.nc`, `03_Guias.nc` y `preview.svg` a escala.
 - Arquitectura reutilizable: núcleo de G-code compartido (`js/gcode/gcode-core.js`), geometría (`js/template/geometry.js`), generadores (`js/gcode/template.js`), preview (`js/template/preview.js`), UI genérica (`js/ui/template-ui.js`) y descriptores por plantilla (`templates/*.js`). Una plantilla nueva solo aporta geometría.
 - Casos de regresión en `tests/template.test.js` (geometría, offset por fuera, contorno/cavidad/guías y SVG).
+- Nuevo `tests/template-catalog.test.js`: recorre automáticamente todas las plantillas «stable» del registry (15 en total) y verifica que cada una genera G-code válido y seguro para contorno, cavidad y guías, que `preview.svg` se construye correctamente y que el sentido del corte se conserva al rotar 90°. Incluye casos específicos para Precision Bass (dos cavidades) y Humbucker con orejas (relieve de orejas condicionado a `earDepth`).
+
+### Fixed
+
+- Corregido un bug de CSS donde el atributo `hidden` no ocultaba realmente elementos con clase `.form-field` (u otras con `display` propio) por empate de especificidad con la regla del navegador; afectaba, por ejemplo, al campo de número de pasadas Adaptive de Cantos, que quedaba visible en modo Manual. Se agregó `[hidden] { display: none !important; }` en `css/common.css`.
 
 ### Changed
 

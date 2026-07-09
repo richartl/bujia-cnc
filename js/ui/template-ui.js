@@ -19,6 +19,12 @@
     if (el) el.textContent = message || "";
   }
 
+  // Nombre de archivo seguro a partir del título de la plantilla (sin
+  // espacios, paréntesis ni acentos problemáticos para el sistema de archivos).
+  function fileSlug(text) {
+    return String(text).replace(/[^\w-]+/g, "_").replace(/^_+|_+$/g, "");
+  }
+
   // ---------------------------------------------------------- Parámetros
   function geometryParams() {
     return {
@@ -71,6 +77,8 @@
       plungeFeed: num("cavityPlunge"),
       safeZ: num("cavitySafeZ"),
       direction: val("cavityDirection"),
+      // Solo aplica en plantillas con orejas de montaje (geometry.earPockets).
+      earDepth: num("cavityEarDepth"),
     };
   }
 
@@ -127,7 +135,7 @@
       if (content === null) { setStatus("Contorno: corrige la tabla Adaptive antes de descargar."); return false; }
     } else if (kind === "cavity") {
       content = generateCavity();
-      fileName = "02_Cavidad_" + (descriptor.title || "Plantilla") + ".nc";
+      fileName = "02_Cavidad_" + fileSlug(descriptor.title || "Plantilla") + ".nc";
       if (content === null) { setStatus("Cavidad: corrige la tabla Adaptive antes de descargar."); return false; }
     } else if (kind === "guides") {
       content = generateGuides();
@@ -166,7 +174,9 @@
     if (previewView === "contour") {
       preview.renderToolpaths(canvas, geometry, [gcode.contourToolpath(geometry, contourParams())], "contour");
     } else if (previewView === "cavity") {
-      preview.renderToolpaths(canvas, geometry, gcode.cavityToolpaths(geometry, cavityParams()), "cavity");
+      const cavityParamsValue = cavityParams();
+      const cavityPaths = gcode.cavityToolpaths(geometry, cavityParamsValue).concat(gcode.earPocketToolpaths(geometry, cavityParamsValue));
+      preview.renderToolpaths(canvas, geometry, cavityPaths, "cavity");
     } else if (previewView === "guides") {
       preview.renderToolpaths(canvas, geometry, gcode.guideToolpaths(geometry, guidesParams()), "guides");
     } else {
@@ -229,6 +239,32 @@
     });
   }
 
+  // Rellena el texto de la página (título, descripción, nombres de archivo)
+  // desde el descriptor, para que el HTML sea idéntico entre plantillas.
+  function applyDescriptorText() {
+    const title = descriptor.title || "Plantilla";
+    document.title = "Bujia CNC — Plantilla " + title;
+
+    document.querySelectorAll("[data-bind=\"pageTitle\"]").forEach(function (el) { el.textContent = "Plantilla " + title; });
+    // El contenido de la descripción es fijo (definido por nosotros en cada
+    // descriptor, no por el usuario), así que innerHTML es seguro y permite
+    // conservar énfasis simple como <code>.
+    document.querySelectorAll("[data-bind=\"pageDescription\"]").forEach(function (el) { el.innerHTML = descriptor.description || ""; });
+    document.querySelectorAll("[data-bind=\"topbarTool\"]").forEach(function (el) { el.textContent = title; });
+    document.querySelectorAll("[data-bind=\"footerTool\"]").forEach(function (el) { el.textContent = "Plantilla " + title; });
+    document.querySelectorAll("[data-bind=\"cavityFileName\"]").forEach(function (el) { el.textContent = "02_Cavidad_" + fileSlug(title) + ".nc"; });
+  }
+
+  // Muestra/oculta campos que solo aplican a ciertas plantillas
+  // (marcados en el HTML con data-requires="ears", etc.).
+  function applyConditionalFields() {
+    document.querySelectorAll("[data-requires]").forEach(function (el) {
+      const need = el.getAttribute("data-requires");
+      const has = need === "ears" ? Boolean(descriptor.hasEars) : true;
+      el.hidden = !has;
+    });
+  }
+
   function bindEvents() {
     const form = document.querySelector(".tool-form");
     if (form) form.addEventListener("input", renderPreview);
@@ -259,6 +295,8 @@
     descriptor = window.BujiaTemplates && window.BujiaTemplates[templateId];
     if (!descriptor) { setStatus("Plantilla no encontrada."); return; }
 
+    applyDescriptorText();
+    applyConditionalFields();
     fillDefaults();
 
     contourController = window.BujiaAdaptivePasses.createAdaptivePassesController({

@@ -111,6 +111,13 @@ a {
   text-decoration: none;
 }
 
+/* El atributo hidden debe ganar siempre, incluso sobre reglas de display
+   de componentes como .form-field (misma especificidad, pero display:grid
+   se aplicaría después si no fuera por este !important). */
+[hidden] {
+  display: none !important;
+}
+
 a:hover {
   color: var(--color-accent-hover);
 }
