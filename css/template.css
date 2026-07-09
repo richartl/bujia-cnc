@@ -109,6 +109,76 @@ body[data-template] {
 .swatch--cavity { background: var(--color-accent); }
 .swatch--guide { background: var(--color-warning); }
 
+/* Sección colapsable con la previsualización de cada G-code */
+.collapsible {
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.collapsible__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: transparent;
+  border: 0;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.collapsible__head:hover {
+  background: var(--color-surface-2);
+}
+
+.collapsible__chevron {
+  display: inline-block;
+  color: var(--color-muted);
+  transition: transform 0.15s ease;
+}
+
+.collapsible__head[aria-expanded="true"] .collapsible__chevron {
+  transform: rotate(90deg);
+}
+
+.collapsible__hint {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.collapsible__body {
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.gcode-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.gcode-preview {
+  margin: 0;
+}
+
+.gcode-preview figcaption {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  margin-bottom: 0.4rem;
+}
+
+.mini-canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  background: var(--color-app);
+}
+
 /* Lista de descargas */
 .download-list {
   display: grid;

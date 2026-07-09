@@ -30,6 +30,30 @@
           <p>Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>. El corte va por fuera de la línea; la holgura añade separación extra (por ejemplo para copiadora).</p>
         </div>
 
+        <section class="card collapsible" id="gcodePreviewsCard">
+          <button type="button" class="collapsible__head" id="gcodePreviewsToggle" aria-expanded="false" aria-controls="gcodePreviewsBody">
+            <span class="collapsible__chevron" aria-hidden="true">▸</span>
+            <span>Previsualización de cada G-code</span>
+            <span class="collapsible__hint muted">Contorno · Cavidad · Guías</span>
+          </button>
+          <div class="collapsible__body" id="gcodePreviewsBody" hidden>
+            <div class="gcode-preview-grid">
+              <figure class="gcode-preview">
+                <figcaption>01 Contorno</figcaption>
+                <div class="preview-frame"><canvas id="previewContour" class="mini-canvas" aria-label="Recorrido del contorno"></canvas></div>
+              </figure>
+              <figure class="gcode-preview">
+                <figcaption>02 Cavidad</figcaption>
+                <div class="preview-frame"><canvas id="previewCavity" class="mini-canvas" aria-label="Recorrido de la cavidad"></canvas></div>
+              </figure>
+              <figure class="gcode-preview">
+                <figcaption>03 Guías</figcaption>
+                <div class="preview-frame"><canvas id="previewGuides" class="mini-canvas" aria-label="Recorrido de las guías"></canvas></div>
+              </figure>
+            </div>
+          </div>
+        </section>
+
         <form class="tool-form" aria-label="Formulario plantilla Humbucker">
           <div class="form-group">
             <div class="form-group__title">Orientación de la plantilla</div>

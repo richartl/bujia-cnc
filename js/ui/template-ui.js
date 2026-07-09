@@ -172,6 +172,8 @@
     } else {
       preview.renderCanvas(canvas, geometry);
     }
+
+    renderGcodePreviews();
   }
 
   function setPreviewView(view) {
@@ -180,6 +182,29 @@
       button.classList.toggle("is-active", button.getAttribute("data-preview-view") === view);
     });
     renderPreview();
+  }
+
+  // Sección colapsable con la previsualización de los tres G-code a la vez.
+  function renderGcodePreviews() {
+    const body = byId("gcodePreviewsBody");
+    if (!body || body.hidden) return; // No dibujar mientras está oculta.
+
+    const geometry = buildGeometry();
+    const preview = window.BujiaTemplatePreview;
+    const gcode = window.BujiaTemplateGcode;
+
+    preview.renderToolpaths(byId("previewContour"), geometry, [gcode.contourToolpath(geometry, contourParams())], "contour");
+    preview.renderToolpaths(byId("previewCavity"), geometry, gcode.cavityToolpaths(geometry, cavityParams()), "cavity");
+    preview.renderToolpaths(byId("previewGuides"), geometry, gcode.guideToolpaths(geometry, guidesParams()), "guides");
+  }
+
+  function toggleGcodePreviews() {
+    const body = byId("gcodePreviewsBody");
+    const toggle = byId("gcodePreviewsToggle");
+    const show = body.hidden;
+    body.hidden = !show;
+    if (toggle) toggle.setAttribute("aria-expanded", show ? "true" : "false");
+    if (show) renderGcodePreviews();
   }
 
   // ------------------------------------------------------------ Modo
@@ -217,6 +242,9 @@
         setPreviewView(button.getAttribute("data-preview-view"));
       });
     });
+
+    const previewsToggle = byId("gcodePreviewsToggle");
+    if (previewsToggle) previewsToggle.addEventListener("click", toggleGcodePreviews);
 
     window.addEventListener("resize", renderPreview);
   }
