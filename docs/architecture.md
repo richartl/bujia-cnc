@@ -52,6 +52,19 @@ Solo debe contener utilidades pequeñas compartidas:
 
 No debe convertirse en núcleo CAM global.
 
+## Capa de interfaz (app shell)
+
+La interfaz se presenta como una aplicación de escritorio de pantalla completa, sin frameworks y sin build. Sigue funcionando abriendo `index.html` con `file://` porque todo son scripts clásicos (`window.Bujia*`) enlazados con rutas relativas; no se usan ES Modules con `import` ni `fetch()` de recursos.
+
+Piezas compartidas de UI:
+
+- `css/common.css`: sistema de diseño (tokens de color oscuro/claro, tipografía, botones, badges) y layout del shell (barra superior, menú lateral, área principal, panel derecho, pie de página).
+- `css/forms.css`: formularios en grupos con separadores, validación visual y tabla Adaptive Passes tipo hoja de cálculo.
+- `css/home.css`: dashboard de `index.html`.
+- `js/ui/app-shell.js`: fuente única de la lista de herramientas del menú lateral, marca la herramienta activa (`body[data-tool]`) y aplica el tema (system/light/dark) guardado en Settings. La ruta base se indica con `body[data-shell-base]` (`""` en `index.html`, `"../"` en `pages/`).
+
+Cada página de herramienta mantiene su propio formulario, validación y generación de G-code; el shell solo aporta la navegación y el aspecto común.
+
 ## Herramientas previstas
 
 - Surfacing.

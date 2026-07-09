@@ -7,39 +7,79 @@
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/home.css">
 </head>
-<body>
-  <main>
-    <header class="card">
-      <h1>Bujia CNC Toolbox</h1>
-      <p class="muted">Caja de herramientas CNC offline. Elige una operación, llena pocos datos y descarga G-code.</p>
+<body data-tool="home" data-shell-base="">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">⌘</span>
+        <span>Bujia CNC Toolbox</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Caja de herramientas CNC offline</span>
+      </div>
     </header>
 
-    <section aria-label="Herramientas" class="tool-grid">
-      <a class="tool-link" href="pages/surfacing.html">
-        <strong>Surfacing</strong>
-        Aplanado de superficies.
-      </a>
-      <a class="tool-link" href="pages/edge.html">
-        <strong>Cantos</strong>
-        Próximamente.
-      </a>
-      <a class="tool-link" href="pages/slots.html">
-        <strong>Ranuras</strong>
-        Próximamente.
-      </a>
-      <a class="tool-link" href="pages/drilling.html">
-        <strong>Taladros</strong>
-        Próximamente.
-      </a>
-      <a class="tool-link" href="pages/pockets.html">
-        <strong>Cavidades</strong>
-        Próximamente.
-      </a>
-      <a class="tool-link" href="pages/settings.html">
-        <strong>Settings</strong>
-        Preferencias futuras.
-      </a>
-    </section>
-  </main>
+    <div class="app__body app__body--nopanel">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <section class="dashboard">
+          <div class="dashboard__hero">
+            <h1>Elige una herramienta</h1>
+            <p>Cada herramienta resuelve una sola operación de taller. Llena pocos datos, genera G-code seguro y descárgalo. Todo funciona sin conexión.</p>
+          </div>
+
+          <h2 class="section-label">Disponibles</h2>
+          <section class="tool-grid" aria-label="Herramientas disponibles">
+            <a class="tool-card" href="pages/surfacing.html">
+              <span class="tool-card__icon" aria-hidden="true">▦</span>
+              <span class="tool-card__title">Surfacing</span>
+              <p class="tool-card__desc">Aplanado de superficies con recorrido zig-zag y pasadas de profundidad.</p>
+            </a>
+            <a class="tool-card" href="pages/edge.html">
+              <span class="tool-card__icon" aria-hidden="true">▭</span>
+              <span class="tool-card__title">Cantos</span>
+              <p class="tool-card__desc">Mecanizado de cantos con pasadas de profundidad y retorno rápido.</p>
+            </a>
+            <a class="tool-card" href="pages/settings.html">
+              <span class="tool-card__icon" aria-hidden="true">⚙</span>
+              <span class="tool-card__title">Settings</span>
+              <p class="tool-card__desc">Preferencias locales: feed, spindle, safe Z, herramienta y tema.</p>
+            </a>
+          </section>
+
+          <h2 class="section-label" style="margin-top: var(--space-xl);">Próximamente</h2>
+          <section class="tool-grid" aria-label="Herramientas futuras">
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">≡</span>
+              <span class="tool-card__title">Ranuras</span>
+              <p class="tool-card__desc">Generación de ranuras simples.</p>
+            </div>
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">◎</span>
+              <span class="tool-card__title">Taladros</span>
+              <p class="tool-card__desc">Ciclos y puntos de perforación.</p>
+            </div>
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">▢</span>
+              <span class="tool-card__title">Cavidades</span>
+              <p class="tool-card__desc">Cavidades rectangulares simples.</p>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <footer class="app__footer">
+      <span>Bujia CNC Toolbox</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="js/ui/app-shell.js"></script>
 </body>
 </html>

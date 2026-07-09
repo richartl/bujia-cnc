@@ -3,78 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bujia CNC - Settings</title>
+  <title>Bujia CNC — Settings</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/forms.css">
 </head>
-<body>
-  <main>
-    <p><a href="../index.html">← Volver al inicio</a></p>
-    <section class="card">
-      <h1>Settings</h1>
-      <p class="muted">Preferencias locales guardadas únicamente en este navegador con LocalStorage. No hay usuarios, base de datos ni sincronización.</p>
+<body data-tool="settings" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">⚙</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Preferencias locales</span>
+      </div>
+    </header>
 
-      <form class="tool-form" aria-label="Preferencias">
-        <div class="form-field">
-          <label for="lastFolder">Última carpeta usada</label>
-          <input id="lastFolder" name="lastFolder" type="text" placeholder="Ejemplo: CNC/Gcode">
+    <div class="app__body app__body--nopanel">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Settings</h1>
+          <p>Preferencias guardadas únicamente en este navegador con LocalStorage. No hay usuarios, base de datos ni sincronización.</p>
         </div>
 
-        <div class="form-field">
-          <label for="lastStrategy">Última estrategia</label>
-          <select id="lastStrategy" name="lastStrategy">
-            <option value="zigzag">Zig Zag</option>
-            <option value="oneway">One Way</option>
-            <option value="rasterx">Raster X</option>
-            <option value="rastery">Raster Y</option>
-          </select>
-        </div>
+        <form class="tool-form" aria-label="Preferencias" style="max-width: 720px;">
+          <div class="form-group">
+            <div class="form-group__title">Apariencia</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="theme">Tema</label>
+                <select id="theme" name="theme">
+                  <option value="system">Sistema</option>
+                  <option value="light">Claro</option>
+                  <option value="dark">Oscuro</option>
+                </select>
+                <div class="hint">El tema se aplica de inmediato en toda la aplicación.</div>
+              </div>
+            </div>
+          </div>
 
-        <div class="form-field">
-          <label for="lastFeed">Último feed (mm/min)</label>
-          <input id="lastFeed" name="lastFeed" type="number" value="600" step="1">
-        </div>
+          <div class="form-group">
+            <div class="form-group__title">Valores por defecto de corte</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="lastStrategy">Última estrategia</label>
+                <select id="lastStrategy" name="lastStrategy">
+                  <option value="zigzag">Zig Zag</option>
+                  <option value="oneway">One Way</option>
+                  <option value="rasterx">Raster X</option>
+                  <option value="rastery">Raster Y</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="lastFeed">Último feed (mm/min)</label>
+                <input id="lastFeed" name="lastFeed" type="number" value="600" step="1">
+              </div>
+              <div class="form-field">
+                <label for="lastPlunge">Último plunge (mm/min)</label>
+                <input id="lastPlunge" name="lastPlunge" type="number" value="100" step="1">
+              </div>
+              <div class="form-field">
+                <label for="lastSpindle">Último spindle / RPM</label>
+                <input id="lastSpindle" name="lastSpindle" type="number" value="1000" step="1">
+              </div>
+              <div class="form-field">
+                <label for="lastSafeZ">Último safe Z (mm)</label>
+                <input id="lastSafeZ" name="lastSafeZ" type="number" value="5" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="lastTool">Última herramienta</label>
+                <input id="lastTool" name="lastTool" type="text" value="Fresa recta">
+              </div>
+            </div>
+          </div>
 
-        <div class="form-field">
-          <label for="lastPlunge">Último plunge (mm/min)</label>
-          <input id="lastPlunge" name="lastPlunge" type="number" value="100" step="1">
-        </div>
+          <div class="form-group">
+            <div class="form-group__title">Archivos</div>
+            <div class="form-grid">
+              <div class="form-field form-field--wide">
+                <label for="lastFolder">Última carpeta usada</label>
+                <input id="lastFolder" name="lastFolder" type="text" placeholder="Ejemplo: CNC/Gcode">
+              </div>
+            </div>
+          </div>
 
-        <div class="form-field">
-          <label for="lastSpindle">Último spindle / RPM</label>
-          <input id="lastSpindle" name="lastSpindle" type="number" value="1000" step="1">
-        </div>
+          <div class="form-actions">
+            <button id="saveButton" type="button" class="btn btn--primary">Guardar preferencias</button>
+            <button id="resetButton" type="button" class="btn">Limpiar preferencias</button>
+          </div>
+          <p id="settingsStatus" class="hint"></p>
+        </form>
+      </main>
+    </div>
 
-        <div class="form-field">
-          <label for="lastSafeZ">Último safe Z (mm)</label>
-          <input id="lastSafeZ" name="lastSafeZ" type="number" value="5" step="0.1">
-        </div>
+    <footer class="app__footer">
+      <span>Settings</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
 
-        <div class="form-field">
-          <label for="lastTool">Última herramienta</label>
-          <input id="lastTool" name="lastTool" type="text" value="Fresa recta">
-        </div>
-
-        <div class="form-field">
-          <label for="theme">Tema</label>
-          <select id="theme" name="theme">
-            <option value="system">Sistema</option>
-            <option value="light">Claro</option>
-            <option value="dark">Oscuro</option>
-          </select>
-        </div>
-
-        <div class="form-actions">
-          <button id="saveButton" type="button">Guardar preferencias</button>
-          <button id="resetButton" type="button">Limpiar preferencias</button>
-        </div>
-      </form>
-
-      <p id="settingsStatus" class="muted"></p>
-    </section>
-  </main>
   <script src="../js/storage.js"></script>
   <script src="../ui/common.js"></script>
+  <script src="../js/ui/app-shell.js"></script>
   <script src="../js/ui/settings-ui.js"></script>
 </body>
 </html>

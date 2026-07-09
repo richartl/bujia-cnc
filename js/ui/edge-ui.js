@@ -44,6 +44,41 @@
     window.BujiaCommon.setText("edgeStatus", message);
   }
 
+  function updateModeChip() {
+    const chip = byId("modeChip");
+    if (chip) chip.innerHTML = "<strong>Modo:</strong>&nbsp;" + (isAdaptiveMode() ? "Adaptive Passes" : "Manual");
+  }
+
+  function clean(value) {
+    return window.BujiaEdgeGcode.clean(value);
+  }
+
+  function renderSummary() {
+    const el = byId("paramSummary");
+    if (!el) return;
+
+    const p = getParameters();
+    const passes = isAdaptiveMode() && adaptiveController
+      ? adaptiveController.readRows().length
+      : Math.max(1, Math.ceil(p.finalDepth / (p.depthPerPass || p.finalDepth || 1)));
+
+    const rows = [
+      ["Eje", String(p.axis).toUpperCase() + " · " + clean(p.length) + " mm"],
+      ["Sentido", p.cutDirection === "climb" ? "A favor" : "En contra"],
+      ["Pasadas", String(passes)],
+      ["Profundidad final", "Z-" + clean(p.finalDepth) + " mm"],
+      ["Feed", "F" + clean(p.feed)],
+      ["Plunge", "F" + clean(p.plunge)],
+      ["Spindle", "S" + clean(p.rpm)],
+      ["Safe Z", clean(p.safeZ) + " mm"],
+      ["Herramienta", p.tool],
+    ];
+
+    el.innerHTML = rows.map(function (row) {
+      return "<div class=\"row\"><dt>" + row[0] + "</dt><dd>" + row[1] + "</dd></div>";
+    }).join("");
+  }
+
   function generateGcode() {
     let gcode;
 
@@ -61,6 +96,7 @@
 
     byId("output").value = gcode;
     saveCurrentValues();
+    renderSummary();
     renderStatus("G-code generado.");
   }
 
@@ -96,6 +132,7 @@
     const isAdaptive = isAdaptiveMode();
     byId("adaptivePanel").hidden = !isAdaptive;
     byId("adaptivePassCountField").hidden = !isAdaptive;
+    updateModeChip();
     generateGcode();
   }
 
@@ -104,6 +141,9 @@
     byId("downloadButton").addEventListener("click", downloadGcode);
     byId("copyButton").addEventListener("click", copyGcode);
     byId("passMode").addEventListener("change", updateModeVisibility);
+
+    const form = document.querySelector(".tool-form");
+    if (form) form.addEventListener("input", renderSummary);
   }
 
   function initEdgeUi() {

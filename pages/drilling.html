@@ -3,34 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bujia CNC - Taladros</title>
+  <title>Bujia CNC — Taladros</title>
   <link rel="stylesheet" href="../css/common.css">
   <link rel="stylesheet" href="../css/forms.css">
 </head>
-<body>
-  <main>
-    <p><a href="../index.html">← Volver al inicio</a></p>
-    <section class="card">
-      <h1>Taladros</h1>
-      <p class="muted">Formulario futuro para operaciones de taladro.</p>
-      <form class="tool-form" aria-label="Formulario Taladros">
-        <div class="form-field">
-          <label for="holeDepth">Profundidad de taladro (mm)</label>
-          <input id="holeDepth" name="holeDepth" type="number" placeholder="Pendiente de implementación">
+<body data-tool="drilling" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">◎</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Taladros</span>
+      </div>
+    </header>
+
+    <div class="app__body app__body--nopanel">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Taladros <span class="badge">Pronto</span></h1>
+          <p>Herramienta para generar ciclos simples de perforación o puntos de taladro. En desarrollo.</p>
         </div>
-        <div class="form-field">
-          <label for="safeZ">Z seguro (mm)</label>
-          <input id="safeZ" name="safeZ" type="number" placeholder="Pendiente de implementación">
+
+        <div class="card" style="max-width: 640px;">
+          <p class="muted">Esta herramienta todavía no está disponible. Vuelve al inicio para usar Surfacing o Cantos.</p>
+          <p style="margin-top: var(--space-md);"><a class="btn btn--sm" href="../index.html">← Volver al inicio</a></p>
         </div>
-        <div class="form-field">
-          <label for="peckDepth">Peck opcional (mm)</label>
-          <input id="peckDepth" name="peckDepth" type="number" placeholder="Pendiente de implementación">
-        </div>
-        <div class="form-actions">
-          <button type="button" disabled>Generar próximamente</button>
-        </div>
-      </form>
-    </section>
-  </main>
+      </main>
+    </div>
+
+    <footer class="app__footer">
+      <span>Taladros</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/ui/app-shell.js"></script>
 </body>
 </html>

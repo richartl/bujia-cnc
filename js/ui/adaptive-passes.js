@@ -138,13 +138,63 @@
       return false;
     }
 
-    function autoDistribute() {
-      rows = distributeDepth(targetDepth(), passCount(), defaultFeedrate(), defaultRpm());
+    function ensureRows() {
+      if (!rows.length) rows = distributeDepth(targetDepth(), passCount(), defaultFeedrate(), defaultRpm());
+    }
+
+    // Reparte la profundidad objetivo por igual según el número de pasadas
+    // del formulario, conservando feedrate, RPM y comentarios por índice.
+    // Desbloquea todas las filas.
+    function autoDistributeDepth() {
+      const total = targetDepth();
+      const count = passCount();
+      const previous = rows;
+      const feed = defaultFeedrate();
+      const rpm = defaultRpm();
+      const baseDepth = total / count;
+      const built = [];
+      let used = 0;
+
+      for (let index = 0; index < count; index++) {
+        const isLast = index === count - 1;
+        const depth = isLast ? total - used : baseDepth;
+        used += depth;
+        const source = previous[index];
+        built.push(createRow(
+          index,
+          depth,
+          source ? source.feedrate : feed,
+          source ? source.rpm : rpm,
+          false,
+          source ? source.comment : ""
+        ));
+      }
+
+      rows = recalculateRows(built, total);
+      save();
+      render();
+    }
+
+    // Aplica el feedrate por defecto a todas las filas.
+    function autoDistributeFeed() {
+      ensureRows();
+      const feed = defaultFeedrate();
+      rows.forEach(function (row) { row.feedrate = feed; });
+      save();
+      render();
+    }
+
+    // Aplica las RPM por defecto a todas las filas.
+    function autoDistributeRpm() {
+      ensureRows();
+      const rpm = defaultRpm();
+      rows.forEach(function (row) { row.rpm = rpm; });
       save();
       render();
     }
 
     function redistribute() {
+      ensureRows();
       rows = redistributeRows(rows, targetDepth());
       save();
       render();
@@ -185,16 +235,47 @@
       render();
     }
 
-    function renderSummary() {
+    function renderValidation() {
       const validation = validate();
+      const statusClass = validation.isValid ? "badge--ok" : "badge--warn";
+      return [
+        "<div class=\"adaptive-validation\">",
+        "<div class=\"metric\"><span>Objetivo</span><strong>" + formatNumber(validation.targetDepth) + " mm</strong></div>",
+        "<div class=\"metric\"><span>Calculado</span><strong>" + formatNumber(validation.calculatedDepth) + " mm</strong></div>",
+        "<div class=\"metric\"><span>Diferencia</span><strong>" + formatNumber(validation.difference) + " mm</strong></div>",
+        "<div class=\"metric metric--status\"><span>Estado</span><strong><span class=\"badge " + statusClass + "\">" + validation.status + "</span></strong></div>",
+        "</div>",
+      ].join("");
+    }
+
+    function stat(list, pick) {
+      if (!list.length) return 0;
+      return pick === "max" ? Math.max.apply(null, list) : Math.min.apply(null, list);
+    }
+
+    function renderStats() {
+      const feeds = rows.map(function (row) { return toNumber(row.feedrate); });
+      const rpms = rows.map(function (row) { return toNumber(row.rpm); });
+      const depths = rows.map(function (row) { return toNumber(row.depth); });
+
+      const tiles = [
+        ["Pasadas", String(rows.length)],
+        ["Feed máx", formatNumber(stat(feeds, "max"))],
+        ["Feed mín", formatNumber(stat(feeds, "min"))],
+        ["RPM máx", formatNumber(stat(rpms, "max"))],
+        ["RPM mín", formatNumber(stat(rpms, "min"))],
+        ["Prof. máx", formatNumber(stat(depths, "max")) + " mm"],
+        ["Prof. mín", formatNumber(stat(depths, "min")) + " mm"],
+        ["Tiempo estimado", "—"],
+      ];
+
       return [
         "<div class=\"adaptive-summary\">",
-        "<strong>Objetivo:</strong> " + formatNumber(validation.targetDepth) + " mm",
-        "<strong>Calculado:</strong> " + formatNumber(validation.calculatedDepth) + " mm",
-        "<strong>Diferencia:</strong> " + formatNumber(validation.difference) + " mm",
-        "<strong>Estado:</strong> " + validation.status,
+        tiles.map(function (tile) {
+          return "<div class=\"tile\"><span>" + tile[0] + "</span><strong>" + tile[1] + "</strong></div>";
+        }).join(""),
         "</div>",
-      ].join(" ");
+      ].join("");
     }
 
     function render() {
@@ -203,39 +284,42 @@
       rows = recalculateRows(rows, targetDepth());
       container.innerHTML = [
         "<div class=\"adaptive-actions\">",
-        "<button type=\"button\" data-adaptive-action=\"auto\">Auto distribuir</button>",
-        "<button type=\"button\" data-adaptive-action=\"redistribute\">Redistribuir</button>",
-        "<button type=\"button\" data-adaptive-action=\"reset\">Reset</button>",
+        "<button type=\"button\" class=\"btn btn--sm\" data-adaptive-action=\"auto-depth\">Auto distribuir profundidad</button>",
+        "<button type=\"button\" class=\"btn btn--sm\" data-adaptive-action=\"auto-feed\">Auto distribuir Feed</button>",
+        "<button type=\"button\" class=\"btn btn--sm\" data-adaptive-action=\"auto-rpm\">Auto distribuir RPM</button>",
+        "<button type=\"button\" class=\"btn btn--sm\" data-adaptive-action=\"redistribute\">Redistribuir</button>",
+        "<button type=\"button\" class=\"btn btn--sm\" data-adaptive-action=\"reset\">Reset</button>",
         "</div>",
         "<div class=\"adaptive-table-wrap\">",
         "<table class=\"adaptive-table\">",
         "<thead><tr>",
-        "<th>#</th>",
+        "<th>Pasada</th>",
         "<th>Feedrate</th>",
         "<th>RPM</th>",
         "<th>Profundidad</th>",
-        "<th>Acumulada</th>",
+        "<th>Acumulado</th>",
         "<th>Restante</th>",
-        "<th>Bloqueada</th>",
+        "<th>Bloquear</th>",
         "<th>Comentarios</th>",
         "</tr></thead>",
         "<tbody>",
         rows.map(function (row, index) {
           return [
-            "<tr>",
-            "<td>" + row.passNumber + "</td>",
+            "<tr class=\"" + (row.locked ? "is-locked" : "") + "\">",
+            "<td class=\"cell-index\">" + row.passNumber + "</td>",
             "<td><input data-row=\"" + index + "\" data-field=\"feedrate\" type=\"number\" step=\"1\" value=\"" + formatNumber(row.feedrate) + "\"></td>",
             "<td><input data-row=\"" + index + "\" data-field=\"rpm\" type=\"number\" step=\"1\" value=\"" + formatNumber(row.rpm) + "\"></td>",
             "<td><input data-row=\"" + index + "\" data-field=\"depth\" type=\"number\" step=\"0.0001\" value=\"" + formatNumber(row.depth) + "\"></td>",
-            "<td>" + formatNumber(row.accumulatedDepth) + "</td>",
-            "<td>" + formatNumber(row.remainingDepth) + "</td>",
-            "<td><input data-row=\"" + index + "\" data-field=\"locked\" type=\"checkbox\" " + (row.locked ? "checked" : "") + "></td>",
+            "<td class=\"cell-num\">" + formatNumber(row.accumulatedDepth) + "</td>",
+            "<td class=\"cell-num\">" + formatNumber(row.remainingDepth) + "</td>",
+            "<td class=\"cell-lock\"><input data-row=\"" + index + "\" data-field=\"locked\" type=\"checkbox\" " + (row.locked ? "checked" : "") + "></td>",
             "<td><input data-row=\"" + index + "\" data-field=\"comment\" type=\"text\" value=\"" + String(row.comment).replace(/\"/g, "&quot;") + "\"></td>",
             "</tr>",
           ].join("");
         }).join(""),
         "</tbody></table></div>",
-        renderSummary(),
+        renderValidation(),
+        renderStats(),
       ].join("");
     }
 
@@ -257,7 +341,9 @@
 
       container.addEventListener("click", function (event) {
         const action = event.target.getAttribute("data-adaptive-action");
-        if (action === "auto") autoDistribute();
+        if (action === "auto-depth") autoDistributeDepth();
+        if (action === "auto-feed") autoDistributeFeed();
+        if (action === "auto-rpm") autoDistributeRpm();
         if (action === "redistribute") redistribute();
         if (action === "reset") reset();
       });
@@ -281,7 +367,9 @@
 
     return {
       init: init,
-      autoDistribute: autoDistribute,
+      autoDistributeDepth: autoDistributeDepth,
+      autoDistributeFeed: autoDistributeFeed,
+      autoDistributeRpm: autoDistributeRpm,
       redistribute: redistribute,
       reset: reset,
       readRows: readRows,

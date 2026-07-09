@@ -46,20 +46,28 @@
     setStatus("Preferencias cargadas desde LocalStorage.");
   }
 
+  function applyTheme() {
+    if (window.BujiaShell && window.BujiaShell.applyTheme) window.BujiaShell.applyTheme();
+  }
+
   function saveSettings() {
     const saved = window.BujiaStorage.saveJson(STORAGE_KEY, readSettings());
+    applyTheme();
     setStatus(saved ? "Preferencias guardadas localmente." : "No se pudieron guardar las preferencias.");
   }
 
   function resetSettings() {
     window.BujiaStorage.saveJson(STORAGE_KEY, DEFAULT_SETTINGS);
     writeSettings(DEFAULT_SETTINGS);
+    applyTheme();
     setStatus("Preferencias limpiadas.");
   }
 
   function bindEvents() {
     byId("saveButton").addEventListener("click", saveSettings);
     byId("resetButton").addEventListener("click", resetSettings);
+    // Vista previa inmediata del tema: guarda y aplica al cambiar el selector.
+    byId("theme").addEventListener("change", saveSettings);
   }
 
   function initSettingsUi() {

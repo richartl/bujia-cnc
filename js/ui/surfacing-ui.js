@@ -10,6 +10,45 @@
     return Number(byId(id).value);
   }
 
+  function setStatus(message) {
+    const el = byId("surfacingStatus");
+    if (el) el.textContent = message || "";
+  }
+
+  function clean(value) {
+    return window.BujiaSurfacingGcode.clean(value);
+  }
+
+  function renderSummary() {
+    const el = byId("paramSummary");
+    if (!el) return;
+
+    const p = getParameters();
+    const passes = isAdaptiveMode() && adaptiveController
+      ? adaptiveController.readRows().length
+      : Math.max(1, Math.floor(p.zPasses));
+
+    const rows = [
+      ["Área X × Y", clean(p.distX) + " × " + clean(p.distY) + " mm"],
+      ["Pasadas Z", String(passes)],
+      ["Profundidad total", "Z-" + clean(p.totalZ) + " mm"],
+      ["Feed XY", "F" + clean(p.feedRate)],
+      ["Plunge Z", "F" + clean(p.plungeRate)],
+      ["Stepover", clean(p.stepX) + " mm"],
+      ["Spindle", "S" + clean(p.spindle)],
+      ["Safe Z", clean(p.safeZ) + " mm"],
+    ];
+
+    el.innerHTML = rows.map(function (row) {
+      return "<div class=\"row\"><dt>" + row[0] + "</dt><dd>" + row[1] + "</dd></div>";
+    }).join("");
+  }
+
+  function updateModeChip() {
+    const chip = byId("modeChip");
+    if (chip) chip.innerHTML = "<strong>Modo:</strong>&nbsp;" + (isAdaptiveMode() ? "Adaptive Passes" : "Manual");
+  }
+
   function getParameters() {
     return {
       distX: num("distX"),
@@ -66,22 +105,28 @@
   }
 
   function generateGcode() {
+    renderSummary();
+
     if (!renderStrategyStatus()) {
       byId("output").value = "Próximamente";
+      setStatus("Estrategia no disponible todavía.");
       return;
     }
 
     if (isAdaptiveMode()) {
       if (!adaptiveController.isValid()) {
         byId("output").value = "Adaptive Passes no coincide con la profundidad objetivo. Corrige la tabla antes de generar G-code.";
+        setStatus("Corrige la tabla Adaptive antes de generar.");
         return;
       }
 
       byId("output").value = window.BujiaSurfacingGcode.generateSurfacingAdaptiveGcode(getParameters(), adaptiveController.readRows());
+      setStatus("G-code generado (Adaptive).");
       return;
     }
 
     byId("output").value = window.BujiaSurfacingGcode.generateSurfacingGcode(getParameters());
+    setStatus("G-code generado (Manual).");
   }
 
   function downloadGcode() {
@@ -105,17 +150,19 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    setStatus("Archivo preparado: " + fileName);
   }
 
   function copyGcode() {
     if (!byId("output").value.trim()) generateGcode();
     navigator.clipboard.writeText(byId("output").value)
-      .then(function () { alert("G-code copiado."); })
-      .catch(function () { alert("No se pudo copiar automáticamente."); });
+      .then(function () { setStatus("G-code copiado al portapapeles."); })
+      .catch(function () { setStatus("No se pudo copiar automáticamente."); });
   }
 
   function updateModeVisibility() {
     byId("adaptivePanel").hidden = !isAdaptiveMode();
+    updateModeChip();
     window.BujiaStorage.saveJson(MODE_STORAGE_KEY, { mode: getPassMode() });
     generateGcode();
   }
@@ -136,6 +183,9 @@
       renderStrategyStatus();
       if (getSelectedStrategy() !== "zigzag") byId("output").value = "Próximamente";
     });
+
+    const form = document.querySelector(".tool-form");
+    if (form) form.addEventListener("input", renderSummary);
   }
 
   function initSurfacingUi() {
@@ -152,6 +202,8 @@
     bindEvents();
     updateSuggestion();
     renderStrategyStatus();
+    updateModeChip();
+    renderSummary();
     updateModeVisibility();
   }
 

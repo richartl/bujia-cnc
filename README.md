@@ -53,7 +53,11 @@ Cada página debe ser entendible de forma aislada. La lógica compartida solo de
 
 ## Estado actual
 
-El repositorio contiene un generador funcional de surfacing. Ese comportamiento existente debe conservarse hasta que se apruebe explícitamente cualquier migración hacia `pages/surfacing.html`.
+`index.html` es un dashboard que enlaza a herramientas independientes bajo `pages/`. Están operativas Surfacing (`pages/surfacing.html`), Cantos (`pages/edge.html`) y Settings (`pages/settings.html`); Ranuras, Taladros y Cavidades aparecen como «Próximamente».
+
+La interfaz usa un layout de aplicación de escritorio (tema oscuro, barra superior, menú lateral, panel derecho) construido solo con HTML, CSS y JavaScript nativo, sin frameworks ni build, y funciona abriendo `index.html` con `file://`.
+
+El G-code Manual de Surfacing y Cantos es funcionalidad existente verificada y no debe cambiarse sin aprobación explícita. Surfacing y Cantos comparten el componente Adaptive Passes (`js/ui/adaptive-passes.js`).
 
 ## Principios
 
