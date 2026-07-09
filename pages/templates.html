@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC — Plantillas</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/home.css">
+  <link rel="stylesheet" href="../css/template.css">
+</head>
+<body data-tool="templates" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">🧩</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Generador de Plantillas</span>
+      </div>
+    </header>
+
+    <div class="app__body app__body--nopanel">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Plantillas</h1>
+          <p>No dibujas nada: eliges una plantilla, ajustas sus dimensiones y generas el G-code. Solo Humbucker está disponible; el resto llegará pronto.</p>
+        </div>
+
+        <div id="templatesTree"></div>
+      </main>
+    </div>
+
+    <footer class="app__footer">
+      <span>Plantillas</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/ui/app-shell.js"></script>
+  <script src="../templates/registry.js"></script>
+  <script src="../js/ui/templates-menu.js"></script>
+</body>
+</html>

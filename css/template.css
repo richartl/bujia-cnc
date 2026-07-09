@@ -1,0 +1,73 @@
+/* =========================================================================
+   Constructor de plantillas: preview en canvas, sublabels y descargas
+   ========================================================================= */
+
+.section-sublabel {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-muted);
+  margin: var(--space-md) 0 var(--space-sm);
+}
+
+.template-group {
+  margin-bottom: var(--space-lg);
+}
+
+/* Preview */
+.preview-card {
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.preview-canvas {
+  display: block;
+  width: 100%;
+  height: 380px;
+  background: var(--color-app);
+}
+
+.preview-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.preview-legend .key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preview-legend .swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-strong);
+}
+
+.swatch--piece { background: var(--color-border-strong); }
+.swatch--cavity { background: var(--color-accent); }
+.swatch--guide { background: var(--color-warning); }
+
+/* Lista de descargas */
+.download-list {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.download-list .btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.download-file {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}

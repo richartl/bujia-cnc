@@ -65,6 +65,22 @@ Piezas compartidas de UI:
 
 Cada página de herramienta mantiene su propio formulario, validación y generación de G-code; el shell solo aporta la navegación y el aspecto común.
 
+## Módulo Plantillas (Template Builder)
+
+Herramienta independiente para generar plantillas (p. ej. cavidad de pastilla Humbucker) sin dibujar: el usuario elige una plantilla, ajusta dimensiones y descarga el G-code. Está diseñada para reutilizarse: lo único que cambia entre plantillas es la **geometría**.
+
+Capas:
+
+- `templates/registry.js`: árbol de categorías del menú de Plantillas.
+- `templates/<plantilla>.js`: descriptor de cada plantilla (`defaults` + `buildGeometry(params)`). Único punto específico por plantilla.
+- `js/template/geometry.js`: geometría reutilizable (rectángulo redondeado, offset exterior/interior, anillos concéntricos, plan de profundidades Manual/Adaptive).
+- `js/gcode/gcode-core.js`: núcleo de G-code compartido (formato, cabecera segura `G21/G90/G94 + M3 + G4 P3`, retracción a Z segura, cierre `M5/M30`). No lo usan Surfacing ni Cantos.
+- `js/gcode/template.js`: generadores de Contorno, Cavidad (vaciado) y Guías a partir de la geometría.
+- `js/template/preview.js`: dibujo en Canvas en vivo y construcción de `preview.svg` a escala (misma fuente de verdad).
+- `js/ui/template-ui.js`: controlador genérico dirigido por `body[data-template]`; reutiliza el componente Adaptive Passes para Contorno y Cavidad.
+
+Convenciones: origen en el centro de la pieza; corte por fuera de la línea con desplazamiento del centro de la fresa = radio + holgura (la holgura permite compensar una copiadora). Salidas: `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`.
+
 ## Herramientas previstas
 
 - Surfacing.

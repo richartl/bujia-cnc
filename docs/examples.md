@@ -51,3 +51,14 @@ pages/pockets.html
 ```
 
 Objetivo: generar cavidades rectangulares o simples para carpintería/luthería.
+
+## Plantillas (Template Builder)
+
+Páginas:
+
+```text
+pages/templates.html            (menú de plantillas por categorías)
+pages/template-humbucker.html   (constructor Humbucker)
+```
+
+Objetivo: elegir una plantilla, ajustar dimensiones y descargar el G-code sin dibujar. Genera `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`, con previsualización 2D en Canvas. Reutilizable: una plantilla nueva solo aporta su geometría (`templates/<plantilla>.js`). Implementado: Humbucker. El resto aparece como «Próximamente».

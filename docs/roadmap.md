@@ -38,6 +38,7 @@ Agregar páginas independientes:
 - Cavidades.
 - Perfilados.
 - Escalas.
+- Plantillas (Template Builder): módulo independiente y reutilizable. Implementado el Humbucker; las demás plantillas (Single Coil, P90, bajos, cavidades de cuerpo, Neck Pocket, pickguards, puentes, jack, controles) solo aportarán su geometría sobre la misma interfaz, lógica y generador.
 
 ## Fase 6: Casos de regresión
 
