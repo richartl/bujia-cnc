@@ -82,3 +82,13 @@ Implementado — Hardware:
 Pendiente («Próximamente»): Pickguards y las siluetas de cuerpo completo en Cavidades (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada). Ambas requieren contornos orgánicos reales (no rectángulos redondeados); ver «Límite actual» en `docs/architecture.md`.
 
 Las dimensiones de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería; cada descriptor documenta su fuente y recomienda verificar contra la pieza real antes de cortar.
+
+## Verificación
+
+Página:
+
+```text
+pages/verify.html
+```
+
+Objetivo: revisar un archivo `.nc` ya generado externamente (por ejemplo en Aspire) antes de maquinarlo. Se sube o pega el G-code y la herramienta detecta y muestra sus parámetros (feedrate, RPM, Z segura, profundidades, número de pasadas) con advertencias automáticas (spindle nunca encendido, falta M30, feed no positivo, etc.). El usuario puede corregir esos parámetros y descargar un archivo nuevo. **Las coordenadas X/Y nunca se modifican.** Cambiar el número de pasadas solo se permite cuando se detecta que todas las pasadas repiten el mismo recorrido XY; si no, esa opción se desactiva con una explicación en vez de arriesgar la trayectoria. Implementada.

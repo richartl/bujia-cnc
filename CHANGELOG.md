@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- Nuevo módulo **Verificación** (🔍), independiente de Plantillas/Surfacing/Cantos: permite subir o pegar un archivo `.nc` ya generado (por ejemplo desde Aspire), analizar sus parámetros (feedrate, RPM, Z segura, profundidades, número de pasadas) y corregirlos para descargar un archivo nuevo, **sin modificar nunca las coordenadas X/Y**.
+  - `js/gcode/gcode-verify.js`: analizador y reescritor de G-code. Detecta unidades, modo absoluto/incremental, si el spindle se enciende, si el programa termina correctamente, todos los valores F y S distintos (con conteo de uso), la Z segura, las profundidades de corte y si existe un **patrón de pasada repetible** (mismo recorrido XY a distintas profundidades).
+  - Cambiar feedrate, RPM o Z segura: sustitución dirigida de esos valores en todo el archivo, preservando comentarios y coordenadas.
+  - Cambiar la profundidad final: reescala todas las profundidades detectadas proporcionalmente, mismo número de pasadas.
+  - Cambiar el número de pasadas: **solo si se detecta un patrón de pasada repetible**; en ese caso clona el bloque de la pasada a nuevas profundidades (repartidas en partes iguales). Si no se detecta el patrón, la opción se desactiva con una explicación en vez de arriesgar la trayectoria.
+  - El diámetro de fresa es un campo de referencia que el usuario escribe (el G-code no lo contiene); no se valida ni se escribe en el archivo.
+  - Página `pages/verify.html`: carga por arrastrar/soltar, selector de archivo o pegado directo; resumen de lo detectado con advertencias (spindle nunca encendido, falta M30, feed no positivo, etc.); tabla de parámetros con valor detectado y nuevo valor editable; vista comparativa del G-code original y el modificado; descarga.
+  - `tests/gcode-verify.test.js`: valida contra G-code real generado por nuestra propia herramienta (patrón repetible garantizado), reescritura idempotente cuando no hay cambios, sustitución de feed/RPM/Z segura sin alterar XY, reescalado de profundidad, cambio de número de pasadas, el caso negativo (patrón no detectado → error explícito), y tolerancia a estilos de G-code sin espacios (tipo Aspire).
+
 ### Fixed
 
 - Corregida la plantilla **Humbucker (con orejas)**, que tenía proporciones y concepto equivocados. Ahora usa medidas de referencia reales (Seymour Duncan / Gibson): cuerpo 74 × 24 mm, orejas de 10 mm que llevan el total a 92 × 42 mm, radio de esquinas 4 mm, profundidad recomendada 16.5 mm con fresa mínima de 6 mm. Se corrigió también el concepto de corte: **todo el bolsillo (cuerpo + orejas) se corta a una sola profundidad uniforme** dentro del mismo archivo de cavidad, no como un relieve superficial aparte a una profundidad distinta. Se modela con `geometry.cavities` (cuerpo + 2 orejas, reutilizando la misma mecánica de Precision Bass) en vez del mecanismo `earPockets`/`hasEars` anterior, que se retiró del código por quedar sin uso (`js/gcode/template.js`, `js/template/preview.js`, `js/ui/template-ui.js`, y el campo «Profundidad de orejas» eliminado de las 20 páginas de plantillas).

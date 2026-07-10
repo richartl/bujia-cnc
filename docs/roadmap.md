@@ -39,6 +39,7 @@ Agregar páginas independientes:
 - Perfilados.
 - Escalas.
 - Plantillas (Template Builder): módulo independiente y reutilizable. Implementado el catálogo completo de pastillas de guitarra (Humbucker, Humbucker con orejas, Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, Personalizada), de bajo (Jazz Bass, Precision, Music Man, Soapbar, EMG35, EMG40, Personalizada) y de hardware simple (Neck Pocket, Puentes, Jack, Controles, Personalizadas), todas sobre la misma interfaz, lógica y generador. Pendiente, y deliberadamente aparte por requerir contornos orgánicos reales: Pickguards y las siluetas de cuerpo completo en Cavidades (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada) — ver `docs/architecture.md`.
+- Verificación: herramienta independiente para revisar y corregir parámetros (feedrate, RPM, Z segura, profundidad final, número de pasadas) de un archivo `.nc` ya generado externamente, sin modificar su trayectoria X/Y. Implementada.
 
 ## Fase 6: Casos de regresión
 

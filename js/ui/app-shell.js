@@ -12,6 +12,7 @@
     { id: "surfacing", title: "Surfacing", icon: "▦", page: "pages/surfacing.html", status: "stable" },
     { id: "edge", title: "Cantos", icon: "▭", page: "pages/edge.html", status: "stable" },
     { id: "templates", title: "Plantillas", icon: "🧩", page: "pages/templates.html", status: "stable" },
+    { id: "verify", title: "Verificación", icon: "🔍", page: "pages/verify.html", status: "stable" },
     { id: "slots", title: "Ranuras", icon: "≡", page: "pages/slots.html", status: "soon" },
     { id: "drilling", title: "Taladros", icon: "◎", page: "pages/drilling.html", status: "soon" },
     { id: "pockets", title: "Cavidades", icon: "▢", page: "pages/pockets.html", status: "soon" },

@@ -107,6 +107,19 @@ Toda la geometría de Plantillas (pieza, cavidad, orejas) se construye a partir 
 2. Datos de contorno reales (coordenadas digitalizadas de una plantilla o plano conocido), no solo dos medidas.
 3. Extender `js/template/geometry.js`, `js/gcode/template.js` y `js/template/preview.js` para aceptar ese tipo de geometría junto al rectángulo redondeado existente, sin romper las plantillas actuales.
 
+## Módulo Verificación (revisión y corrección de parámetros de G-code)
+
+Herramienta independiente de Plantillas, Surfacing y Cantos: recibe un archivo `.nc` **ya generado externamente** (por ejemplo desde Aspire) y permite revisar y corregir sus parámetros —feedrate, RPM, Z segura, profundidad final, número de pasadas— **sin modificar nunca las coordenadas X/Y**. Es una herramienta de "mejor esfuerzo": si algo no se puede detectar o transformar con confianza, esa edición específica se desactiva con una explicación en vez de arriesgar una salida incorrecta.
+
+Piezas:
+
+- `js/gcode/gcode-verify.js`: núcleo de análisis y reescritura, sin dependencias de Plantillas.
+  - `analyze(text)`: parsea el G-code línea a línea (tolerante a formatos sin espacios, comentarios `(...)` o `;`, mayúsculas/minúsculas) y devuelve unidades, modo absoluto/incremental, spindle, fin de programa, feedrates detectados (con conteo de uso), RPM detectados, Z segura detectada, profundidades de corte detectadas, número de pasadas, advertencias, y si existe un **patrón de pasada repetible** (mismo recorrido XY a distintas profundidades).
+  - `rewrite(analysis, edits)`: aplica sustituciones dirigidas de tokens (`F`, `S`, `Z`) letra por letra dentro de cada línea, preservando comentarios y todo lo que no se pidió cambiar. Cambiar la profundidad final reescala todas las profundidades proporcionalmente (mismo número de pasadas). Cambiar el número de pasadas **solo se permite si `analysis.passPattern.detected` es `true`**: en ese caso clona el bloque de la primera pasada detectada y lo repite a nuevas profundidades (repartidas en partes iguales); si no hay patrón detectado, lanza un error explicando por qué en vez de generar una trayectoria arriesgada.
+- `pages/verify.html` + `js/ui/verify-ui.js`: controlador de la página (carga de archivo por arrastrar/soltar, selector de archivo o pegado directo; muestra parámetros detectados con su valor editable al lado; vista comparativa original/modificado; descarga). El diámetro de fresa es un dato **puramente informativo** que el usuario escribe (el G-code no lo contiene) y no se valida ni se escribe en el archivo.
+
+**Detección del patrón de pasada.** Se localizan los rangos de línea donde el corte se mantiene en cada profundidad detectada, y se compara la secuencia de movimientos (tipo de comando + X + Y, ignorando Z/F/S) entre pasadas. Se tolera un pequeño desajuste al final de cada bloque (como máximo un par de movimientos) porque la última pasada no tiene una pasada siguiente de la que "heredar" su línea de aproximación y en su lugar arrastra el pie de página del archivo; lo relevante es que el recorrido de corte real coincida, no ese remate ambiguo.
+
 Es un esfuerzo mayor y deliberadamente aparte del catálogo de pastillas y hardware simple.
 
 ## Herramientas previstas
