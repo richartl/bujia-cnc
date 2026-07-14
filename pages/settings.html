@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC - Settings</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+</head>
+<body>
+  <main>
+    <p><a href="../index.html">← Volver al inicio</a></p>
+    <section class="card">
+      <h1>Settings</h1>
+      <p class="muted">Preferencias locales guardadas únicamente en este navegador con LocalStorage. No hay usuarios, base de datos ni sincronización.</p>
+
+      <form class="tool-form" aria-label="Preferencias">
+        <div class="form-field">
+          <label for="lastFolder">Última carpeta usada</label>
+          <input id="lastFolder" name="lastFolder" type="text" placeholder="Ejemplo: CNC/Gcode">
+        </div>
+
+        <div class="form-field">
+          <label for="lastStrategy">Última estrategia</label>
+          <select id="lastStrategy" name="lastStrategy">
+            <option value="zigzag">Zig Zag</option>
+            <option value="oneway">One Way</option>
+            <option value="rasterx">Raster X</option>
+            <option value="rastery">Raster Y</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="lastFeed">Último feed (mm/min)</label>
+          <input id="lastFeed" name="lastFeed" type="number" value="600" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="lastPlunge">Último plunge (mm/min)</label>
+          <input id="lastPlunge" name="lastPlunge" type="number" value="100" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="lastSpindle">Último spindle / RPM</label>
+          <input id="lastSpindle" name="lastSpindle" type="number" value="1000" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="lastSafeZ">Último safe Z (mm)</label>
+          <input id="lastSafeZ" name="lastSafeZ" type="number" value="5" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="lastTool">Última herramienta</label>
+          <input id="lastTool" name="lastTool" type="text" value="Fresa recta">
+        </div>
+
+        <div class="form-field">
+          <label for="theme">Tema</label>
+          <select id="theme" name="theme">
+            <option value="system">Sistema</option>
+            <option value="light">Claro</option>
+            <option value="dark">Oscuro</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button id="saveButton" type="button">Guardar preferencias</button>
+          <button id="resetButton" type="button">Limpiar preferencias</button>
+        </div>
+      </form>
+
+      <p id="settingsStatus" class="muted"></p>
+    </section>
+  </main>
+  <script src="../js/storage.js"></script>
+  <script src="../ui/common.js"></script>
+  <script src="../js/ui/settings-ui.js"></script>
+</body>
+</html>

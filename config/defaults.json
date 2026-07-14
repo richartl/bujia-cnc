@@ -1,0 +1,13 @@
+{
+  "toolId": "flat_13mm_2f_carbide",
+  "materialId": "hardwood_general",
+  "machineId": "generic_grbl_router",
+  "strategyId": "surfacing_conservative",
+  "postProcessorId": "grbl",
+  "fileExtension": "nc",
+  "recommendations": {
+    "autoUpdate": true,
+    "showWarnings": true,
+    "showExplanation": true
+  }
+}

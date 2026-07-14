@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC - Surfacing</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+</head>
+<body>
+  <main>
+    <p><a href="../index.html">← Volver al inicio</a></p>
+    <section class="card">
+      <h1>Surfacing</h1>
+      <p class="muted">Genera un recorrido zig-zag para desbastar/planear una superficie. Prueba primero con el spindle apagado y Z arriba de la madera.</p>
+
+      <form class="tool-form" aria-label="Formulario Surfacing">
+        <div class="form-field">
+          <label for="passMode">Modo</label>
+          <select id="passMode" name="passMode">
+            <option value="manual">Manual</option>
+            <option value="adaptive">Adaptive Passes</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="strategy">Estrategia</label>
+          <select id="strategy" name="strategy">
+            <option value="zigzag">Zig Zag</option>
+            <option value="oneway">One Way</option>
+            <option value="rasterx">Raster X</option>
+            <option value="rastery">Raster Y</option>
+          </select>
+          <div id="strategyStatus" class="muted"></div>
+        </div>
+
+        <div class="form-field">
+          <label for="distX">Distancia total en X / ancho a cubrir (mm)</label>
+          <input id="distX" type="number" value="410" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="distY">Distancia en Y / largo de cada pasada (mm)</label>
+          <input id="distY" type="number" value="210" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="zPasses">Número de pasadas de profundidad Z</label>
+          <input id="zPasses" type="number" value="1" min="1" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="totalZ">Profundidad total en Z a recorrer (mm)</label>
+          <input id="totalZ" type="number" value="0.7" min="0" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="feedRate">Feedrate de corte XY (mm/min)</label>
+          <input id="feedRate" type="number" value="600" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="plungeRate">Feedrate de bajada Z (mm/min)</label>
+          <input id="plungeRate" type="number" value="100" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="stepX">Distancia que avanza X en cada pasada / stepover (mm)</label>
+          <input id="stepX" type="number" value="3" step="0.1">
+          <div id="stepSuggestion" class="muted"></div>
+        </div>
+
+        <div class="form-field">
+          <label for="toolDia">Diámetro de fresa (mm)</label>
+          <input id="toolDia" type="number" value="13" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="spindle">RPM / S del spindle</label>
+          <input id="spindle" type="number" value="1000" step="1">
+        </div>
+
+        <div class="form-field">
+          <label for="safeZ">Z seguro para movimientos rápidos (mm)</label>
+          <input id="safeZ" type="number" value="5" step="0.1">
+        </div>
+
+        <div class="form-field">
+          <label for="fileName">Nombre del archivo</label>
+          <input id="fileName" type="text" value="surfacing.nc">
+        </div>
+
+        <div class="form-field">
+          <label for="startDirection">Dirección inicial</label>
+          <select id="startDirection">
+            <option value="positive">Primero Y positivo</option>
+            <option value="negative">Primero Y negativo</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button id="generateButton" type="button">Generar G-code</button>
+          <button id="downloadButton" type="button">Descargar .nc</button>
+          <button id="copyButton" type="button">Copiar</button>
+        </div>
+      </form>
+
+      <section id="adaptivePanel" class="mode-panel" hidden>
+        <h2>Adaptive Passes</h2>
+        <p class="muted">Edita cada pasada como una hoja de cálculo. Las filas bloqueadas no se modifican automáticamente.</p>
+        <div id="adaptivePassesContainer"></div>
+      </section>
+
+      <label class="form-field" for="output">
+        <span>Vista previa</span>
+        <textarea id="output" spellcheck="false" rows="22"></textarea>
+      </label>
+    </section>
+  </main>
+  <script src="../js/storage.js"></script>
+  <script src="../ui/common.js"></script>
+  <script src="../js/ui/adaptive-passes.js"></script>
+  <script src="../js/gcode/surfacing.js"></script>
+  <script src="../js/ui/surfacing-ui.js"></script>
+</body>
+</html>

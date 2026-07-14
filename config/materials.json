@@ -1,0 +1,32 @@
+[
+  {
+    "id": "softwood_general",
+    "name": "Madera blanda",
+    "type": "softwood",
+    "hardness": "soft",
+    "recommendedFeed": 900,
+    "recommendedRpm": 12000,
+    "recommendedPlunge": 150,
+    "observations": "Permite avances moderados si la herramienta está afilada."
+  },
+  {
+    "id": "hardwood_general",
+    "name": "Madera dura",
+    "type": "hardwood",
+    "hardness": "hard",
+    "recommendedFeed": 600,
+    "recommendedRpm": 12000,
+    "recommendedPlunge": 100,
+    "observations": "Usar avances conservadores y escuchar la máquina."
+  },
+  {
+    "id": "mdf_general",
+    "name": "MDF",
+    "type": "mdf",
+    "hardness": "medium",
+    "recommendedFeed": 800,
+    "recommendedRpm": 14000,
+    "recommendedPlunge": 120,
+    "observations": "Genera polvo fino; usar aspiración adecuada."
+  }
+]

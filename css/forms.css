@@ -1,0 +1,104 @@
+.tool-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.form-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.form-actions button {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.mode-panel {
+  margin-top: var(--space-md);
+}
+
+.adaptive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.adaptive-actions button {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+}
+
+.adaptive-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.adaptive-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+}
+
+.adaptive-table th,
+.adaptive-table td {
+  border: 1px solid var(--color-border);
+  padding: 0.35rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.adaptive-table th {
+  background: var(--color-background);
+  font-size: 0.9rem;
+}
+
+.adaptive-table input[type="number"],
+.adaptive-table input[type="text"] {
+  min-width: 7rem;
+  border: 0;
+  border-radius: 0;
+  padding: 0.35rem;
+  background: transparent;
+}
+
+.adaptive-table input[type="checkbox"] {
+  width: auto;
+}
+
+.adaptive-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
