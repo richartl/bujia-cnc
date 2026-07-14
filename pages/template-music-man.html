@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC — Plantilla Music Man</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+  <link rel="stylesheet" href="../css/template.css">
+</head>
+<body data-tool="templates" data-shell-base="../" data-template="music-man">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">🧩</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip"><strong>Plantilla:</strong>&nbsp;<span data-bind="topbarTool">Music Man</span></span>
+        <span class="topbar__chip">Origen = centro de la pieza</span>
+      </div>
+    </header>
+
+    <div class="app__body">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1 data-bind="pageTitle">Plantilla Music Man</h1>
+          <p data-bind="pageDescription">Ajusta las dimensiones, revisa la previsualización y descarga los tres archivos de G-code más el <code>preview.svg</code>.</p>
+        </div>
+
+        <section class="card collapsible" id="gcodePreviewsCard">
+          <button type="button" class="collapsible__head" id="gcodePreviewsToggle" aria-expanded="false" aria-controls="gcodePreviewsBody">
+            <span class="collapsible__chevron" aria-hidden="true">▸</span>
+            <span>Código de cada G-code (.nc)</span>
+            <span class="collapsible__hint muted">Contorno · Cavidad · Guías</span>
+          </button>
+          <div class="collapsible__body" id="gcodePreviewsBody" hidden>
+            <div class="gcode-code-grid">
+              <figure class="gcode-code">
+                <figcaption><span>01_Contorno.nc</span><span class="gcode-lines muted" id="linesContour"></span></figcaption>
+                <textarea id="codeContour" class="gcode-output" readonly spellcheck="false" aria-label="Código de 01_Contorno.nc"></textarea>
+              </figure>
+              <figure class="gcode-code">
+                <figcaption><span data-bind="cavityFileName">02_Cavidad_Music_Man.nc</span><span class="gcode-lines muted" id="linesCavity"></span></figcaption>
+                <textarea id="codeCavity" class="gcode-output" readonly spellcheck="false" aria-label="Código del archivo de cavidad"></textarea>
+              </figure>
+              <figure class="gcode-code">
+                <figcaption><span>03_Guias.nc</span><span class="gcode-lines muted" id="linesGuides"></span></figcaption>
+                <textarea id="codeGuides" class="gcode-output" readonly spellcheck="false" aria-label="Código de 03_Guias.nc"></textarea>
+              </figure>
+            </div>
+          </div>
+        </section>
+
+        <form class="tool-form" aria-label="Formulario plantilla Music Man">
+          <div class="form-group">
+            <div class="form-group__title">Orientación de la plantilla</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="templateRotation">Rotar toda la plantilla</label>
+                <select id="templateRotation">
+                  <option value="0">0°</option>
+                  <option value="90">90°</option>
+                  <option value="180">180°</option>
+                  <option value="270">270°</option>
+                </select>
+                <div class="hint">Rota contorno, cavidad, guías, preview y G-code de forma conjunta alrededor del centro.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Pieza / MDF exterior</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="outerW">Ancho X (mm)</label>
+                <input id="outerW" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="outerH">Alto Y (mm)</label>
+                <input id="outerH" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="thickness">Espesor (mm, informativo)</label>
+                <input id="thickness" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="margin">Margen (mm, informativo)</label>
+                <input id="margin" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="outerRadius">Radio de esquinas (mm)</label>
+                <input id="outerRadius" type="number" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Cavidad (centrada automáticamente)</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="cavW">Ancho (mm)</label>
+                <input id="cavW" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="cavH">Alto (mm)</label>
+                <input id="cavH" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="cavRadius">Radio (mm)</label>
+                <input id="cavRadius" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="cavOffsetX">Offset X (mm)</label>
+                <input id="cavOffsetX" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="cavOffsetY">Offset Y (mm)</label>
+                <input id="cavOffsetY" type="number" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="cavRotation">Rotación (°)</label>
+                <input id="cavRotation" type="number" step="1" value="0">
+                <div class="hint">Arquitectura preparada; todavía no se aplica.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Corte del contorno</div>
+            <div class="form-grid">
+              <label class="mode-toggle form-field" for="contourMode">
+                <span>Modo de pasadas</span>
+                <select id="contourMode">
+                  <option value="manual">Manual</option>
+                  <option value="adaptive">Adaptive Passes</option>
+                </select>
+              </label>
+              <div class="form-field">
+                <label for="contourTool">Diámetro de fresa (mm)</label>
+                <input id="contourTool" type="number" step="0.1" value="6">
+              </div>
+              <div class="form-field">
+                <label for="contourClearance">Holgura / copiadora (mm)</label>
+                <input id="contourClearance" type="number" step="0.1" value="0">
+              </div>
+              <div class="form-field">
+                <label for="contourPasses">Número de pasadas</label>
+                <input id="contourPasses" type="number" min="1" step="1" value="4">
+              </div>
+              <div class="form-field">
+                <label for="contourFinalDepth">Profundidad final (mm)</label>
+                <input id="contourFinalDepth" type="number" min="0" step="0.1" value="12">
+              </div>
+              <div class="form-field">
+                <label for="contourFeed">Feedrate (mm/min)</label>
+                <input id="contourFeed" type="number" step="1" value="800">
+              </div>
+              <div class="form-field">
+                <label for="contourPlunge">Plunge Z (mm/min)</label>
+                <input id="contourPlunge" type="number" step="1" value="200">
+              </div>
+              <div class="form-field">
+                <label for="contourRpm">RPM / S</label>
+                <input id="contourRpm" type="number" step="1" value="12000">
+              </div>
+              <div class="form-field">
+                <label for="contourSafeZ">Safe Z (mm)</label>
+                <input id="contourSafeZ" type="number" step="0.1" value="6">
+              </div>
+              <div class="form-field">
+                <label for="contourDirection">Sentido</label>
+                <select id="contourDirection">
+                  <option value="climb">Climb</option>
+                  <option value="conventional">Conventional</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <section id="contourAdaptivePanel" class="mode-panel card" hidden>
+            <h2>Adaptive Passes — Contorno</h2>
+            <p class="muted">Edita cada pasada del contorno como hoja de cálculo.</p>
+            <div id="contourAdaptiveContainer"></div>
+          </section>
+
+          <div class="form-group">
+            <div class="form-group__title">Corte de la cavidad</div>
+            <div class="form-grid">
+              <label class="mode-toggle form-field" for="cavityMode">
+                <span>Modo de pasadas</span>
+                <select id="cavityMode">
+                  <option value="manual">Manual</option>
+                  <option value="adaptive">Adaptive Passes</option>
+                </select>
+              </label>
+              <div class="form-field">
+                <label for="cavityTool">Diámetro de fresa (mm)</label>
+                <input id="cavityTool" type="number" step="0.1" value="6">
+              </div>
+              <div class="form-field">
+                <label for="cavityClearance">Holgura / copiadora (mm)</label>
+                <input id="cavityClearance" type="number" step="0.1" value="0">
+              </div>
+              <div class="form-field">
+                <label for="cavityStepover">Stepover (mm)</label>
+                <input id="cavityStepover" type="number" step="0.1" value="2.4">
+              </div>
+              <div class="form-field">
+                <label for="cavityPasses">Número de pasadas</label>
+                <input id="cavityPasses" type="number" min="1" step="1" value="3">
+              </div>
+              <div class="form-field">
+                <label for="cavityFinalDepth">Profundidad final (mm)</label>
+                <input id="cavityFinalDepth" type="number" min="0" step="0.1" value="18">
+              </div>
+              <div class="form-field">
+                <label for="cavityFeed">Feedrate (mm/min)</label>
+                <input id="cavityFeed" type="number" step="1" value="700">
+              </div>
+              <div class="form-field">
+                <label for="cavityPlunge">Plunge Z (mm/min)</label>
+                <input id="cavityPlunge" type="number" step="1" value="150">
+              </div>
+              <div class="form-field">
+                <label for="cavityRpm">RPM / S</label>
+                <input id="cavityRpm" type="number" step="1" value="12000">
+              </div>
+              <div class="form-field">
+                <label for="cavitySafeZ">Safe Z (mm)</label>
+                <input id="cavitySafeZ" type="number" step="0.1" value="6">
+              </div>
+              <div class="form-field">
+                <label for="cavityDirection">Sentido</label>
+                <select id="cavityDirection">
+                  <option value="climb">Climb</option>
+                  <option value="conventional">Conventional</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <section id="cavityAdaptivePanel" class="mode-panel card" hidden>
+            <h2>Adaptive Passes — Cavidad</h2>
+            <p class="muted">Edita cada pasada de la cavidad como hoja de cálculo.</p>
+            <div id="cavityAdaptiveContainer"></div>
+          </section>
+
+          <div class="form-group">
+            <div class="form-group__title">Guías (archivo independiente)</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="guidesTool">Diámetro de herramienta (mm)</label>
+                <input id="guidesTool" type="number" step="0.1" value="3">
+              </div>
+              <div class="form-field">
+                <label for="guidesDepth">Profundidad (mm)</label>
+                <input id="guidesDepth" type="number" min="0" step="0.1" value="1">
+              </div>
+              <div class="form-field">
+                <label for="guidesFeed">Feed (mm/min)</label>
+                <input id="guidesFeed" type="number" step="1" value="500">
+              </div>
+              <div class="form-field">
+                <label for="guidesRpm">RPM / S</label>
+                <input id="guidesRpm" type="number" step="1" value="12000">
+              </div>
+              <div class="form-field">
+                <label for="guidesSafeZ">Safe Z (mm)</label>
+                <input id="guidesSafeZ" type="number" step="0.1" value="6">
+              </div>
+              <div class="form-field">
+                <label class="hint" for="guidesHorizontal" style="display:flex;gap:.5rem;align-items:center;">
+                  <input id="guidesHorizontal" type="checkbox" checked style="width:auto;"> Guía horizontal
+                </label>
+                <label class="hint" for="guidesVertical" style="display:flex;gap:.5rem;align-items:center;">
+                  <input id="guidesVertical" type="checkbox" checked style="width:auto;"> Guía vertical
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
+
+      <aside class="app__panel template-panel" aria-label="Descargas y previsualización">
+        <div class="panel-block">
+          <div class="panel-block__title">Descargas</div>
+          <button id="downloadAll" type="button" class="btn btn--primary btn--block">Generar y descargar todo</button>
+          <div class="download-list" style="margin-top: var(--space-sm);">
+            <button id="downloadContour" type="button" class="btn">01 Contorno<span class="download-file">&nbsp;· 01_Contorno.nc</span></button>
+            <button id="downloadCavity" type="button" class="btn">02 Cavidad<span class="download-file">&nbsp;· <span data-bind="cavityFileName">02_Cavidad_Music_Man.nc</span></span></button>
+            <button id="downloadGuides" type="button" class="btn">03 Guías<span class="download-file">&nbsp;· 03_Guias.nc</span></button>
+            <button id="downloadSvg" type="button" class="btn">Preview<span class="download-file">&nbsp;· preview.svg</span></button>
+          </div>
+          <p id="templateStatus" class="hint" style="margin-top: var(--space-sm);"></p>
+        </div>
+
+        <div class="panel-block preview-sticky">
+          <div class="panel-block__title">Previsualización</div>
+          <div class="preview-views" role="tablist" aria-label="Vista de previsualización">
+            <button type="button" class="preview-view is-active" data-preview-view="design">Diseño</button>
+            <button type="button" class="preview-view" data-preview-view="contour">Contorno</button>
+            <button type="button" class="preview-view" data-preview-view="cavity">Cavidad</button>
+            <button type="button" class="preview-view" data-preview-view="guides">Guías</button>
+          </div>
+          <div class="preview-frame">
+            <canvas id="previewCanvas" class="preview-canvas" aria-label="Previsualización 2D"></canvas>
+            <div class="preview-legend">
+              <span class="key"><span class="swatch swatch--piece"></span>Contorno</span>
+              <span class="key"><span class="swatch swatch--cavity"></span>Cavidad</span>
+              <span class="key"><span class="swatch swatch--guide"></span>Guías</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="app__footer">
+      <span data-bind="footerTool">Plantilla Music Man</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/download.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/ui/app-shell.js"></script>
+  <script src="../js/ui/adaptive-passes.js"></script>
+  <script src="../js/template/geometry.js"></script>
+  <script src="../js/gcode/gcode-core.js"></script>
+  <script src="../js/template/preview.js"></script>
+  <script src="../js/gcode/template.js"></script>
+  <script src="../templates/music-man.js"></script>
+  <script src="../js/ui/template-ui.js"></script>
+</body>
+</html>

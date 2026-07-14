@@ -1,187 +1,95 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Generador G-code Surfacing CNC</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 980px; margin: 24px auto; padding: 0 16px; background: #111; color: #eee; }
-    h1 { margin-bottom: 8px; }
-    .note { background: #1f1f1f; border: 1px solid #333; padding: 12px; border-radius: 8px; margin: 12px 0 20px; line-height: 1.45; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-    label { display: block; background: #1a1a1a; border: 1px solid #333; padding: 10px; border-radius: 8px; }
-    label span { display: block; font-size: 13px; color: #bbb; margin-bottom: 6px; }
-    input, select { width: 100%; box-sizing: border-box; padding: 9px; border-radius: 6px; border: 1px solid #444; background: #080808; color: #eee; font-size: 15px; }
-    button { margin-top: 14px; margin-right: 8px; padding: 11px 16px; border: 0; border-radius: 7px; cursor: pointer; font-weight: bold; background: #e8e8e8; color: #111; }
-    button.secondary { background: #333; color: #eee; border: 1px solid #555; }
-    textarea { width: 100%; height: 420px; margin-top: 16px; box-sizing: border-box; border-radius: 8px; border: 1px solid #444; background: #050505; color: #d8ffd8; padding: 12px; font-family: Consolas, Monaco, monospace; font-size: 13px; line-height: 1.35; }
-    .suggestion { margin-top: 8px; color: #9ee493; font-size: 14px; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC Toolbox</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/home.css">
 </head>
-<body>
-  <h1>Generador G-code Surfacing CNC</h1>
-  <div class="note">
-    Genera un recorrido zig-zag para desbastar/planear una superficie.
-    Usa <b>G21</b> milímetros, <b>G90</b> absoluto al inicio y <b>G91</b> relativo para el patrón.
-    Prueba primero con el spindle apagado y Z arriba de la madera.
+<body data-tool="home" data-shell-base="">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">⌘</span>
+        <span>Bujia CNC Toolbox</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Caja de herramientas CNC offline</span>
+      </div>
+    </header>
+
+    <div class="app__body app__body--nopanel">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <section class="dashboard">
+          <div class="dashboard__hero">
+            <h1>Elige una herramienta</h1>
+            <p>Cada herramienta resuelve una sola operación de taller. Llena pocos datos, genera G-code seguro y descárgalo. Todo funciona sin conexión.</p>
+          </div>
+
+          <h2 class="section-label">Disponibles</h2>
+          <section class="tool-grid" aria-label="Herramientas disponibles">
+            <a class="tool-card" href="pages/surfacing.html">
+              <span class="tool-card__icon" aria-hidden="true">▦</span>
+              <span class="tool-card__title">Surfacing</span>
+              <p class="tool-card__desc">Aplanado de superficies con recorrido zig-zag y pasadas de profundidad.</p>
+            </a>
+            <a class="tool-card" href="pages/edge.html">
+              <span class="tool-card__icon" aria-hidden="true">▭</span>
+              <span class="tool-card__title">Cantos</span>
+              <p class="tool-card__desc">Mecanizado de cantos con pasadas de profundidad y retorno rápido.</p>
+            </a>
+            <a class="tool-card" href="pages/templates.html">
+              <span class="tool-card__icon" aria-hidden="true">🧩</span>
+              <span class="tool-card__title">Plantillas</span>
+              <p class="tool-card__desc">Pastillas de guitarra/bajo, Neck Pocket, Puentes, Jack y Controles: ajusta medidas y genera contorno, cavidad y guías.</p>
+            </a>
+            <a class="tool-card" href="pages/verify.html">
+              <span class="tool-card__icon" aria-hidden="true">🔍</span>
+              <span class="tool-card__title">Verificación</span>
+              <p class="tool-card__desc">Sube un .nc y revisa feedrate, RPM, Z segura y pasadas antes de maquinar; corrígelos sin tocar la trayectoria.</p>
+            </a>
+            <a class="tool-card" href="pages/settings.html">
+              <span class="tool-card__icon" aria-hidden="true">⚙</span>
+              <span class="tool-card__title">Settings</span>
+              <p class="tool-card__desc">Preferencias locales: feed, spindle, safe Z, herramienta y tema.</p>
+            </a>
+          </section>
+
+          <h2 class="section-label" style="margin-top: var(--space-xl);">Próximamente</h2>
+          <section class="tool-grid" aria-label="Herramientas futuras">
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">≡</span>
+              <span class="tool-card__title">Ranuras</span>
+              <p class="tool-card__desc">Generación de ranuras simples.</p>
+            </div>
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">◎</span>
+              <span class="tool-card__title">Taladros</span>
+              <p class="tool-card__desc">Ciclos y puntos de perforación.</p>
+            </div>
+            <div class="tool-card is-soon">
+              <span class="tool-card__tag badge">Pronto</span>
+              <span class="tool-card__icon" aria-hidden="true">▢</span>
+              <span class="tool-card__title">Cavidades</span>
+              <p class="tool-card__desc">Cavidades rectangulares simples.</p>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <footer class="app__footer">
+      <span>Bujia CNC Toolbox</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
   </div>
 
-  <div class="grid">
-    <label><span>Distancia total en X / ancho a cubrir (mm)</span><input id="distX" type="number" value="410" step="0.1"></label>
-    <label><span>Distancia en Y / largo de cada pasada (mm)</span><input id="distY" type="number" value="210" step="0.1"></label>
-    <label><span>Número de pasadas de profundidad Z</span><input id="zPasses" type="number" value="1" min="1" step="1"></label>
-    <label><span>Profundidad total en Z a recorrer (mm)</span><input id="totalZ" type="number" value="0.7" min="0" step="0.1"></label>
-    <label><span>Feedrate de corte XY (mm/min)</span><input id="feedRate" type="number" value="600" step="1"></label>
-    <label><span>Feedrate de bajada Z (mm/min)</span><input id="plungeRate" type="number" value="100" step="1"></label>
-    <label><span>Distancia que avanza X en cada pasada / stepover (mm)</span><input id="stepX" type="number" value="3" step="0.1"><div id="stepSuggestion" class="suggestion"></div></label>
-    <label><span>Diámetro de fresa (mm)</span><input id="toolDia" type="number" value="13" step="0.1"></label>
-    <label><span>RPM / S del spindle</span><input id="spindle" type="number" value="1000" step="1"></label>
-    <label><span>Z seguro para movimientos rápidos (mm)</span><input id="safeZ" type="number" value="5" step="0.1"></label>
-    <label><span>Nombre del archivo</span><input id="fileName" type="text" value="surfacing.nc"></label>
-    <label><span>Dirección inicial</span><select id="startDirection"><option value="positive">Primero Y positivo</option><option value="negative">Primero Y negativo</option></select></label>
-  </div>
-
-  <button onclick="generateGcode()">Generar G-code</button>
-  <button class="secondary" onclick="downloadGcode()">Descargar .nc</button>
-  <button class="secondary" onclick="copyGcode()">Copiar</button>
-
-  <textarea id="output" spellcheck="false"></textarea>
-
-<script>
-function num(id) { return Number(document.getElementById(id).value); }
-function clean(n) { return Number(Number(n).toFixed(4)).toString(); }
-
-function updateSuggestion() {
-  const dia = num("toolDia");
-  const el = document.getElementById("stepSuggestion");
-  if (!dia || dia <= 0) { el.textContent = ""; return; }
-  const low = dia * 0.30, mid = dia * 0.40, high = dia * 0.50;
-  el.innerHTML = "Sugerencia: " + clean(low) + " a " + clean(high) + " mm. Conservador: " + clean(mid) + " mm.";
-}
-
-function generateGcode() {
-  const distX = num("distX");
-  const distY = num("distY");
-  const zPasses = Math.max(1, Math.floor(num("zPasses")));
-  const totalZ = num("totalZ");
-  const feedRate = num("feedRate");
-  const plungeRate = num("plungeRate");
-  const stepX = num("stepX");
-  const toolDia = num("toolDia");
-  const spindle = num("spindle");
-  const safeZ = num("safeZ");
-  const startDirection = document.getElementById("startDirection").value;
-
-  let warnings = [];
-  if (distX <= 0 || distY <= 0) warnings.push("ERROR: X y Y deben ser mayores a 0.");
-  if (stepX <= 0) warnings.push("ERROR: El paso en X debe ser mayor a 0.");
-  if (totalZ <= 0) warnings.push("ERROR: La profundidad Z debe ser mayor a 0.");
-  if (feedRate <= 0 || plungeRate <= 0) warnings.push("ERROR: Los feedrates deben ser mayores a 0.");
-  if (toolDia > 0 && stepX > toolDia) warnings.push("ADVERTENCIA: El paso en X es mayor al diámetro de la fresa.");
-
-  if (warnings.some(w => w.startsWith("ERROR"))) {
-    document.getElementById("output").value = warnings.join("\n");
-    return;
-  }
-
-  const zIncrement = totalZ / zPasses;
-  let lines = [];
-
-  lines.push("%");
-  lines.push("( Surfacing generado en navegador )");
-  lines.push("( Area X: " + clean(distX) + " mm, Y: " + clean(distY) + " mm )");
-  lines.push("( Pasadas Z: " + zPasses + ", profundidad total: Z-" + clean(totalZ) + " mm )");
-  lines.push("( Step X: " + clean(stepX) + " mm, Feed XY: F" + clean(feedRate) + " )");
-  lines.push("");
-
-  warnings.forEach(w => lines.push("( " + w + " )"));
-  if (warnings.length) lines.push("");
-
-  lines.push("G21");
-  lines.push("G90");
-  lines.push("G94");
-  lines.push("");
-  lines.push("M3 S" + clean(spindle));
-  lines.push("G4 P3");
-  lines.push("");
-  lines.push("G0 Z" + clean(safeZ));
-  lines.push("G0 X0 Y0");
-  lines.push("");
-
-  for (let zp = 1; zp <= zPasses; zp++) {
-    const depth = zIncrement * zp;
-
-    lines.push("( ============================== )");
-    lines.push("( PASADA Z " + zp + " DE " + zPasses + " - Z-" + clean(depth) + " )");
-    lines.push("( ============================== )");
-    lines.push("G90");
-    lines.push("G0 X0 Y0");
-    lines.push("G1 Z-" + clean(depth) + " F" + clean(plungeRate));
-    lines.push("G91");
-    lines.push("F" + clean(feedRate));
-    lines.push("");
-
-    let coveredX = 0;
-    let pass = 1;
-    let dirY = startDirection === "positive" ? distY : -distY;
-
-    while (coveredX < distX) {
-      const remainingX = distX - coveredX;
-      const moveX = Math.min(stepX, remainingX);
-
-      lines.push("( Z" + zp + " / PASADA XY " + pass + " )");
-      lines.push("G1 Y" + clean(dirY));
-      if (moveX > 0) lines.push("G1 X" + clean(moveX));
-      lines.push("");
-
-      coveredX += moveX;
-      dirY = -dirY;
-      pass++;
-    }
-
-    lines.push("G90");
-    lines.push("G0 Z" + clean(safeZ));
-    lines.push("");
-  }
-
-  lines.push("G90");
-  lines.push("G0 Z" + clean(safeZ));
-  lines.push("G0 X0 Y0");
-  lines.push("M5");
-  lines.push("M30");
-  lines.push("%");
-
-  document.getElementById("output").value = lines.join("\n");
-}
-
-function downloadGcode() {
-  if (!document.getElementById("output").value.trim()) generateGcode();
-
-  let fileName = document.getElementById("fileName").value.trim() || "surfacing.nc";
-  if (!fileName.match(/\.(nc|gcode|tap)$/i)) fileName += ".nc";
-
-  const blob = new Blob([document.getElementById("output").value], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-function copyGcode() {
-  if (!document.getElementById("output").value.trim()) generateGcode();
-  navigator.clipboard.writeText(document.getElementById("output").value)
-    .then(() => alert("G-code copiado."))
-    .catch(() => alert("No se pudo copiar automáticamente."));
-}
-
-document.getElementById("toolDia").addEventListener("input", updateSuggestion);
-document.getElementById("toolDia").addEventListener("change", updateSuggestion);
-updateSuggestion();
-generateGcode();
-</script>
+  <script src="js/ui/app-shell.js"></script>
 </body>
 </html>

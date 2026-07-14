@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC — Verificación de G-code</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+  <link rel="stylesheet" href="../css/template.css">
+  <link rel="stylesheet" href="../css/verify.css">
+</head>
+<body data-tool="verify" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">🔍</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip">Verificación de G-code</span>
+        <span class="topbar__chip" id="fileChip" hidden></span>
+      </div>
+    </header>
+
+    <div class="app__body">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Verificación de G-code</h1>
+          <p>Sube o pega un archivo .nc (por ejemplo exportado desde Aspire) para revisar sus parámetros: feedrate, RPM, Z segura, profundidad final y número de pasadas. Puedes corregirlos y descargar un archivo nuevo. <strong>La trayectoria X/Y original nunca se modifica.</strong></p>
+        </div>
+
+        <section class="card" id="dropZone">
+          <div class="drop-zone" id="dropZoneInner">
+            <p class="drop-zone__title">Arrastra tu archivo .nc aquí, o</p>
+            <label class="btn btn--primary" for="fileInput">Elegir archivo</label>
+            <input id="fileInput" type="file" accept=".nc,.gcode,.tap,.txt" hidden>
+            <p class="muted">También puedes pegar el G-code directamente:</p>
+            <textarea id="pasteArea" class="gcode-output" rows="6" spellcheck="false" placeholder="Pega aquí el contenido de tu archivo .nc..."></textarea>
+            <div class="form-actions">
+              <button id="analyzeButton" type="button" class="btn btn--primary">Analizar</button>
+              <button id="clearButton" type="button" class="btn">Limpiar</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="resultsSection" hidden>
+          <section class="card" id="warningsCard" hidden>
+            <div class="panel-block__title">Advertencias</div>
+            <ul id="warningsList" class="warnings-list"></ul>
+          </section>
+
+          <div class="form-group">
+            <div class="form-group__title">Resumen detectado</div>
+            <dl class="summary-list" id="summaryList"></dl>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Feedrate</div>
+            <p class="hint">Cada valor F distinto encontrado en el archivo. Cambia el que necesites; los demás se conservan.</p>
+            <div id="feedsTable" class="param-table"></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">RPM / Spindle</div>
+            <p class="hint">Cada valor S distinto encontrado en el archivo (M3/M4).</p>
+            <div id="rpmsTable" class="param-table"></div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Z segura</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="safeZDetected">Detectada (mm)</label>
+                <input id="safeZDetected" type="text" readonly>
+              </div>
+              <div class="form-field">
+                <label for="safeZNew">Nuevo valor (mm)</label>
+                <input id="safeZNew" type="number" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Profundidad y pasadas</div>
+            <p class="hint" id="depthsHint"></p>
+            <div id="depthsTable" class="param-table"></div>
+            <div class="form-grid" style="margin-top: var(--space-md);">
+              <div class="form-field">
+                <label for="finalDepthNew">Nueva profundidad final (mm)</label>
+                <input id="finalDepthNew" type="number" step="0.1">
+                <div class="hint">Reescala todas las pasadas manteniendo su proporción y el mismo número de pasadas.</div>
+              </div>
+              <div class="form-field">
+                <label for="passCountNew">Nuevo número de pasadas</label>
+                <input id="passCountNew" type="number" min="1" step="1">
+                <div class="hint" id="passCountHint">Reparte la profundidad final en partes iguales, repitiendo el mismo recorrido XY detectado.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Referencia de fresa (informativo)</div>
+            <p class="hint">El G-code no incluye el diámetro de la fresa. Escríbelo aquí solo como referencia tuya al revisar el archivo; no se valida ni se modifica nada con este dato.</p>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="toolDiameterRef">Diámetro de fresa a usar (mm)</label>
+                <input id="toolDiameterRef" type="number" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <section class="card collapsible" id="viewCard">
+            <button type="button" class="collapsible__head" id="viewToggle" aria-expanded="false" aria-controls="viewBody">
+              <span class="collapsible__chevron" aria-hidden="true">▸</span>
+              <span>Ver G-code original y modificado</span>
+              <span class="collapsible__hint muted" id="changesSummary"></span>
+            </button>
+            <div class="collapsible__body" id="viewBody" hidden>
+              <div class="gcode-code-grid">
+                <figure class="gcode-code">
+                  <figcaption><span>Original</span><span class="gcode-lines muted" id="originalLines"></span></figcaption>
+                  <textarea id="originalView" class="gcode-output" readonly spellcheck="false"></textarea>
+                </figure>
+                <figure class="gcode-code">
+                  <figcaption><span>Modificado</span><span class="gcode-lines muted" id="modifiedLines"></span></figcaption>
+                  <textarea id="modifiedView" class="gcode-output" readonly spellcheck="false"></textarea>
+                </figure>
+              </div>
+              <ul id="changesList" class="changes-list"></ul>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="app__panel" aria-label="Descarga">
+        <div class="panel-block">
+          <div class="panel-block__title">Descarga</div>
+          <button id="downloadButton" type="button" class="btn btn--primary btn--block" disabled>Descargar .nc corregido</button>
+          <div class="form-field" style="margin-top: var(--space-sm);">
+            <label for="outputFileName">Nombre del archivo</label>
+            <input id="outputFileName" type="text" value="editado.nc">
+          </div>
+          <p id="verifyStatus" class="hint" style="margin-top: var(--space-sm);"></p>
+        </div>
+        <div class="panel-block">
+          <div class="panel-block__title">Garantías</div>
+          <ul class="guarantee-list">
+            <li>Las coordenadas X/Y nunca se modifican.</li>
+            <li>Los cambios de pasadas solo se aplican si se detecta el mismo recorrido XY repetido; si no, esa opción se desactiva.</li>
+            <li>Revisa siempre el archivo resultante en un simulador antes de maquinar.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="app__footer">
+      <span>Verificación</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/download.js"></script>
+  <script src="../js/ui/app-shell.js"></script>
+  <script src="../js/gcode/gcode-verify.js"></script>
+  <script src="../js/ui/verify-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC — Cantos</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+</head>
+<body data-tool="edge" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">▭</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip"><strong>Operación:</strong>&nbsp;Cantos</span>
+        <span class="topbar__chip" id="modeChip"><strong>Modo:</strong>&nbsp;Manual</span>
+      </div>
+    </header>
+
+    <div class="app__body">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Cantos</h1>
+          <p>Genera G-code simple para mecanizar cantos con pasadas de profundidad y retorno rápido al inicio.</p>
+        </div>
+
+        <form class="tool-form" aria-label="Formulario Cantos">
+          <div class="form-group">
+            <div class="form-group__title">Modo</div>
+            <div class="form-grid">
+              <label class="mode-toggle form-field" for="passMode">
+                <span>Modo de pasadas</span>
+                <select id="passMode" name="passMode">
+                  <option value="manual">Manual</option>
+                  <option value="adaptive">Adaptive Passes</option>
+                </select>
+              </label>
+              <div class="form-field" id="adaptivePassCountField" hidden>
+                <label for="adaptivePassCount">Número de pasadas Adaptive</label>
+                <input id="adaptivePassCount" name="adaptivePassCount" type="number" value="3" min="1" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Geometría</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="length">Longitud (mm)</label>
+                <input id="length" name="length" type="number" value="300" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="axis">Eje de trabajo</label>
+                <select id="axis" name="axis">
+                  <option value="x">X</option>
+                  <option value="y">Y</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="cutDirection">Sentido respecto al movimiento</label>
+                <select id="cutDirection" name="cutDirection">
+                  <option value="conventional">En contra</option>
+                  <option value="climb">A favor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Profundidad</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="finalDepth">Profundidad final (mm)</label>
+                <input id="finalDepth" name="finalDepth" type="number" value="3" min="0" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="depthPerPass">Profundidad por pasada (mm)</label>
+                <input id="depthPerPass" name="depthPerPass" type="number" value="1" min="0" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Velocidades</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="feed">Feed (mm/min)</label>
+                <input id="feed" name="feed" type="number" value="600" step="1">
+              </div>
+              <div class="form-field">
+                <label for="plunge">Plunge / bajada Z (mm/min)</label>
+                <input id="plunge" name="plunge" type="number" value="100" step="1">
+              </div>
+              <div class="form-field">
+                <label for="rpm">RPM / S del spindle</label>
+                <input id="rpm" name="rpm" type="number" value="1000" step="1">
+              </div>
+              <div class="form-field">
+                <label for="returnFeed">Velocidad de regreso (mm/min)</label>
+                <input id="returnFeed" name="returnFeed" type="number" value="1200" step="1">
+                <div class="hint">El retorno sube a Z segura y vuelve al inicio con movimiento rápido.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Herramienta, seguridad y archivo</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="tool">Herramienta</label>
+                <select id="tool" name="tool">
+                  <option value="Fresa recta">Fresa recta</option>
+                  <option value="Fresa de compresión">Fresa de compresión</option>
+                  <option value="Fresa downcut">Fresa downcut</option>
+                  <option value="Fresa upcut">Fresa upcut</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="safeZ">Safe Z / Z segura (mm)</label>
+                <input id="safeZ" name="safeZ" type="number" value="5" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="fileName">Nombre del archivo</label>
+                <input id="fileName" name="fileName" type="text" value="edge.nc">
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <section id="adaptivePanel" class="mode-panel card" hidden>
+          <h2>Adaptive Passes</h2>
+          <p class="muted">Edita cada pasada como una hoja de cálculo. Las filas bloqueadas no se modifican automáticamente al redistribuir.</p>
+          <div id="adaptivePassesContainer"></div>
+        </section>
+      </main>
+
+      <aside class="app__panel" aria-label="Resumen y salida">
+        <div class="panel-block">
+          <div class="panel-block__title">Acciones</div>
+          <button id="generateButton" type="button" class="btn btn--primary btn--block">Generar G-code</button>
+          <div class="form-actions" style="margin-top: var(--space-sm);">
+            <button id="downloadButton" type="button" class="btn">Descargar</button>
+            <button id="copyButton" type="button" class="btn">Copiar</button>
+          </div>
+          <p id="edgeStatus" class="hint" style="margin-top: var(--space-sm);"></p>
+        </div>
+
+        <div class="panel-block">
+          <div class="panel-block__title">Resumen</div>
+          <dl id="paramSummary" class="summary-list"></dl>
+        </div>
+
+        <div class="panel-block">
+          <div class="panel-block__title">Vista previa</div>
+          <textarea id="output" class="gcode-output" spellcheck="false" rows="20" aria-label="Vista previa de G-code"></textarea>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="app__footer">
+      <span>Cantos</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/download.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../ui/common.js"></script>
+  <script src="../js/ui/app-shell.js"></script>
+  <script src="../js/ui/adaptive-passes.js"></script>
+  <script src="../js/gcode/edge.js"></script>
+  <script src="../js/ui/edge-ui.js"></script>
+</body>
+</html>

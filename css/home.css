@@ -1,0 +1,98 @@
+/* =========================================================================
+   Dashboard principal (index.html)
+   ========================================================================= */
+
+.dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.dashboard__hero {
+  margin-bottom: var(--space-xl);
+}
+
+.dashboard__hero h1 {
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
+}
+
+.dashboard__hero p {
+  margin: var(--space-sm) 0 0;
+  color: var(--color-muted);
+  max-width: 62ch;
+  font-size: 1.02rem;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-faint);
+  margin: 0 0 var(--space-md);
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--space-md);
+}
+
+.tool-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-height: 9.5rem;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+a.tool-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  box-shadow: var(--shadow-md);
+}
+
+.tool-card__icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 1.35rem;
+}
+
+.tool-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.tool-card__desc {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.tool-card__tag {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+}
+
+.tool-card.is-soon {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.tool-card.is-soon .tool-card__icon {
+  background: var(--color-surface-3);
+  color: var(--color-faint);
+}

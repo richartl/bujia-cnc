@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bujia CNC — Surfacing</title>
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/forms.css">
+</head>
+<body data-tool="surfacing" data-shell-base="../">
+  <div class="app">
+    <header class="app__topbar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">▦</span>
+        <span>Bujia CNC</span>
+      </div>
+      <div class="topbar__meta">
+        <span class="topbar__chip"><strong>Operación:</strong>&nbsp;Surfacing</span>
+        <span class="topbar__chip" id="modeChip"><strong>Modo:</strong>&nbsp;Manual</span>
+      </div>
+    </header>
+
+    <div class="app__body">
+      <aside class="app__sidebar" data-shell-nav aria-label="Herramientas"></aside>
+
+      <main class="app__main">
+        <div class="page-head">
+          <h1>Surfacing</h1>
+          <p>Genera un recorrido zig-zag para planear una superficie. Prueba primero con el spindle apagado y Z por encima de la madera.</p>
+        </div>
+
+        <form class="tool-form" aria-label="Formulario Surfacing">
+          <div class="form-group">
+            <div class="form-group__title">Modo y estrategia</div>
+            <div class="form-grid">
+              <label class="mode-toggle form-field" for="passMode">
+                <span>Modo de pasadas</span>
+                <select id="passMode" name="passMode">
+                  <option value="manual">Manual</option>
+                  <option value="adaptive">Adaptive Passes</option>
+                </select>
+              </label>
+              <div class="form-field">
+                <label for="strategy">Estrategia</label>
+                <select id="strategy" name="strategy">
+                  <option value="zigzag">Zig Zag</option>
+                  <option value="oneway">One Way</option>
+                  <option value="rasterx">Raster X</option>
+                  <option value="rastery">Raster Y</option>
+                </select>
+                <div id="strategyStatus" class="hint"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Área de trabajo</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="distX">Ancho a cubrir en X (mm)</label>
+                <input id="distX" type="number" value="410" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="distY">Largo de cada pasada en Y (mm)</label>
+                <input id="distY" type="number" value="210" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Profundidad y pasadas</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="zPasses">Número de pasadas de profundidad Z</label>
+                <input id="zPasses" type="number" value="1" min="1" step="1">
+              </div>
+              <div class="form-field">
+                <label for="totalZ">Profundidad total en Z (mm)</label>
+                <input id="totalZ" type="number" value="0.7" min="0" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Velocidades</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="feedRate">Feedrate de corte XY (mm/min)</label>
+                <input id="feedRate" type="number" value="600" step="1">
+              </div>
+              <div class="form-field">
+                <label for="plungeRate">Feedrate de bajada Z (mm/min)</label>
+                <input id="plungeRate" type="number" value="100" step="1">
+              </div>
+              <div class="form-field">
+                <label for="spindle">RPM / S del spindle</label>
+                <input id="spindle" type="number" value="1000" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Herramienta y stepover</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="toolDia">Diámetro de fresa (mm)</label>
+                <input id="toolDia" type="number" value="13" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="stepX">Stepover: avance de X por pasada (mm)</label>
+                <input id="stepX" type="number" value="3" step="0.1">
+                <div id="stepSuggestion" class="hint hint--accent"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-group__title">Movimientos seguros y archivo</div>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="safeZ">Z seguro para rápidos (mm)</label>
+                <input id="safeZ" type="number" value="5" step="0.1">
+              </div>
+              <div class="form-field">
+                <label for="startDirection">Dirección inicial</label>
+                <select id="startDirection">
+                  <option value="positive">Primero Y positivo</option>
+                  <option value="negative">Primero Y negativo</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="fileName">Nombre del archivo</label>
+                <input id="fileName" type="text" value="surfacing.nc">
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <section id="adaptivePanel" class="mode-panel card" hidden>
+          <h2>Adaptive Passes</h2>
+          <p class="muted">Edita cada pasada como una hoja de cálculo. Las filas bloqueadas no se modifican automáticamente al redistribuir.</p>
+          <div id="adaptivePassesContainer"></div>
+        </section>
+      </main>
+
+      <aside class="app__panel" aria-label="Resumen y salida">
+        <div class="panel-block">
+          <div class="panel-block__title">Acciones</div>
+          <button id="generateButton" type="button" class="btn btn--primary btn--block">Generar G-code</button>
+          <div class="form-actions" style="margin-top: var(--space-sm);">
+            <button id="downloadButton" type="button" class="btn">Descargar .nc</button>
+            <button id="copyButton" type="button" class="btn">Copiar</button>
+          </div>
+          <p id="surfacingStatus" class="hint" style="margin-top: var(--space-sm);"></p>
+        </div>
+
+        <div class="panel-block">
+          <div class="panel-block__title">Resumen</div>
+          <dl id="paramSummary" class="summary-list"></dl>
+        </div>
+
+        <div class="panel-block">
+          <div class="panel-block__title">Vista previa</div>
+          <textarea id="output" class="gcode-output" spellcheck="false" rows="20" aria-label="Vista previa de G-code"></textarea>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="app__footer">
+      <span>Surfacing</span>
+      <span class="spacer"></span>
+      <span data-shell-version>v0.2.0</span>
+    </footer>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/ui/app-shell.js"></script>
+  <script src="../js/ui/adaptive-passes.js"></script>
+  <script src="../js/gcode/surfacing.js"></script>
+  <script src="../js/ui/surfacing-ui.js"></script>
+</body>
+</html>

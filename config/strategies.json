@@ -1,0 +1,24 @@
+[
+  {
+    "id": "surfacing_conservative",
+    "name": "Surfacing conservador",
+    "operationType": "surfacing",
+    "stepoverPercent": 40,
+    "depthPerPassPercent": 20,
+    "feedMultiplier": 0.85,
+    "plungeMultiplier": 0.85,
+    "rpmMultiplier": 1,
+    "notes": "Estrategia segura para empezar con madera."
+  },
+  {
+    "id": "surfacing_balanced",
+    "name": "Surfacing balanceado",
+    "operationType": "surfacing",
+    "stepoverPercent": 45,
+    "depthPerPassPercent": 25,
+    "feedMultiplier": 1,
+    "plungeMultiplier": 1,
+    "rpmMultiplier": 1,
+    "notes": "Estrategia general para surfacing si la máquina está bien ajustada."
+  }
+]

@@ -1,0 +1,210 @@
+/* =========================================================================
+   Constructor de plantillas: preview en canvas, sublabels y descargas
+   ========================================================================= */
+
+.section-sublabel {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-muted);
+  margin: var(--space-md) 0 var(--space-sm);
+}
+
+.template-group {
+  margin-bottom: var(--space-lg);
+}
+
+/* Panel más ancho en el constructor para dar sitio al preview. */
+body[data-template] {
+  --panel-w: 25rem;
+}
+
+/* El panel derecho se apila y fija el preview abajo (siempre visible). */
+.template-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Preview fijo en la parte inferior derecha mientras se editan parámetros. */
+.preview-sticky {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface);
+  padding-top: var(--space-sm);
+}
+
+/* Selector de vista del preview (Diseño / Contorno / Cavidad / Guías) */
+.preview-views {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: var(--space-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.2rem;
+}
+
+.preview-view {
+  flex: 1;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 0.2rem);
+  padding: 0.4rem 0.3rem;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-view:hover {
+  color: var(--color-text);
+}
+
+.preview-view.is-active {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.preview-frame {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-app);
+}
+
+.preview-canvas {
+  display: block;
+  width: 100%;
+  height: 320px;
+  background: var(--color-app);
+}
+
+.preview-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.preview-legend .key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preview-legend .swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 3px;
+  border: 1px solid var(--color-border-strong);
+}
+
+.swatch--piece { background: var(--color-border-strong); }
+.swatch--cavity { background: var(--color-accent); }
+.swatch--guide { background: var(--color-warning); }
+
+/* Sección colapsable con la previsualización de cada G-code */
+.collapsible {
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+
+.collapsible__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: transparent;
+  border: 0;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.collapsible__head:hover {
+  background: var(--color-surface-2);
+}
+
+.collapsible__chevron {
+  display: inline-block;
+  color: var(--color-muted);
+  transition: transform 0.15s ease;
+}
+
+.collapsible__head[aria-expanded="true"] .collapsible__chevron {
+  transform: rotate(90deg);
+}
+
+.collapsible__hint {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.collapsible__body {
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.gcode-code-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.gcode-code {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gcode-code figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.4rem;
+}
+
+.gcode-code .gcode-lines {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gcode-code .gcode-output {
+  min-height: 0;
+  height: 240px;
+  resize: vertical;
+}
+
+/* Lista de descargas */
+.download-list {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.download-list .btn {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.download-file {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}

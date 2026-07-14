@@ -1,1 +1,94 @@
-# Ejemplos
+# Ejemplos de herramientas
+
+Estos ejemplos reflejan la nueva visión de caja de herramientas independientes.
+
+## Surfacing
+
+Página futura:
+
+```text
+pages/surfacing.html
+```
+
+Objetivo: aplanar una superficie usando pocos parámetros.
+
+Entradas típicas:
+
+- Ancho X.
+- Largo Y.
+- Profundidad total.
+- Número de pasadas.
+- Stepover.
+- Feedrate.
+- Z seguro.
+
+## Ranuras
+
+Página futura:
+
+```text
+pages/slots.html
+```
+
+Objetivo: generar ranuras simples con largo, ancho, profundidad y herramienta.
+
+## Taladros
+
+Página futura:
+
+```text
+pages/drilling.html
+```
+
+Objetivo: generar ciclos simples de perforación o puntos de taladro.
+
+## Cavidades
+
+Página futura:
+
+```text
+pages/pockets.html
+```
+
+Objetivo: generar cavidades rectangulares o simples para carpintería/luthería.
+
+## Plantillas (Template Builder)
+
+Páginas:
+
+```text
+pages/templates.html                  (menú de plantillas por categorías)
+pages/template-<id>.html              (constructor por plantilla, mismo esqueleto genérico)
+```
+
+Objetivo: elegir una plantilla, ajustar dimensiones y descargar el G-code sin dibujar. Genera `01_Contorno.nc`, `02_Cavidad_<Plantilla>.nc`, `03_Guias.nc` y `preview.svg`, con previsualización 2D en Canvas. Reutilizable: una plantilla nueva solo aporta su geometría (`templates/<id>.js`).
+
+Implementado — Pastillas de guitarra:
+
+- Humbucker, Humbucker (con orejas), Single Coil, P90, Filtertron, Mini Humbucker, Wide Range, Personalizada.
+
+Implementado — Pastillas de bajo:
+
+- Jazz Bass, Precision (bobina partida, dos cavidades), Music Man, Soapbar, EMG35, EMG40, Personalizada.
+
+Implementado — Hardware:
+
+- Neck Pocket (bolsillo de mástil atornillado tipo Fender).
+- Puentes (relieve de montaje para puente fijo/hardtail).
+- Jack (salida circular de 7/8").
+- Controles (cavidad de electrónica genérica).
+- Personalizadas (plantilla en blanco para cualquier cavidad rectangular).
+
+Pendiente («Próximamente»): Pickguards y las siluetas de cuerpo completo en Cavidades (Stratocaster, Telecaster, Les Paul, Jazz Bass, Precision Bass, Personalizada). Ambas requieren contornos orgánicos reales (no rectángulos redondeados); ver «Límite actual» en `docs/architecture.md`.
+
+Las dimensiones de cada plantilla son aproximaciones basadas en referencias públicas de fabricantes y luthiería; cada descriptor documenta su fuente y recomienda verificar contra la pieza real antes de cortar.
+
+## Verificación
+
+Página:
+
+```text
+pages/verify.html
+```
+
+Objetivo: revisar un archivo `.nc` ya generado externamente (por ejemplo en Aspire) antes de maquinarlo. Se sube o pega el G-code y la herramienta detecta y muestra sus parámetros (feedrate, RPM, Z segura, profundidades, número de pasadas) con advertencias automáticas (spindle nunca encendido, falta M30, feed no positivo, etc.). El usuario puede corregir esos parámetros y descargar un archivo nuevo. **Las coordenadas X/Y nunca se modifican.** Cambiar el número de pasadas solo se permite cuando se detecta que todas las pasadas repiten el mismo recorrido XY; si no, esa opción se desactiva con una explicación en vez de arriesgar la trayectoria. Implementada.
